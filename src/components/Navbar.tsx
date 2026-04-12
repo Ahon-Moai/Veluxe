@@ -11,8 +11,8 @@ export default function Navbar() {
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   const navLinks = [
-    { name: 'COLLECTIONS', path: '/' },
-    { name: 'NEW ARRIVALS', path: '/' },
+    { name: 'COLLECTIONS', path: '/products' },
+    { name: 'NEW ARRIVALS', path: '/products' },
     { name: 'ABOUT', path: '/' },
   ];
 
