@@ -4,10 +4,12 @@ import { Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Cart() {
-  const { cart, updateQuantity, removeFromCart, total } = useCart();
+  const { cart, updateQuantity, removeFromCart, total, shippingTotal } = useCart();
   const formatPrice = (price: number) => {
     return `৳${price.toLocaleString('en-BD')}`;
   };
+
+  const subtotal = total - shippingTotal;
 
   if (cart.length === 0) {
     return (
@@ -33,7 +35,7 @@ export default function Cart() {
             <div key={item.productId} className="flex flex-col sm:flex-row items-center sm:items-start space-y-6 sm:space-y-0 sm:space-x-8 py-8 border-b border-gray-100 last:border-0">
               <div className="w-32 h-40 bg-luxury-cream flex-shrink-0 border border-gray-50 shadow-sm overflow-hidden">
                 <img 
-                  src={`https://picsum.photos/seed/${item.productId}/300/400`} 
+                  src={item.productId.startsWith('data:') ? item.productId : `https://picsum.photos/seed/${item.productId}/300/400`} 
                   alt={item.name} 
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
@@ -44,6 +46,9 @@ export default function Cart() {
                   <div>
                     <h3 className="text-2xl font-serif mb-1">{item.name}</h3>
                     <p className="text-gray-400 text-xs uppercase tracking-widest mb-2">Signature Collection</p>
+                    {item.size && (
+                      <p className="text-luxury-gold text-[10px] uppercase tracking-widest font-bold">Size: {item.size}</p>
+                    )}
                   </div>
                   <p className="text-xl font-serif text-luxury-black">{formatPrice(item.price)}</p>
                 </div>
@@ -84,11 +89,14 @@ export default function Cart() {
             <div className="space-y-4 mb-8">
               <div className="flex justify-between text-gray-600">
                 <span className="font-light tracking-wide">Subtotal</span>
-                <span className="font-medium">{formatPrice(total)}</span>
+                <span className="font-medium">{formatPrice(subtotal)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span className="font-light tracking-wide">Shipping</span>
-                <span className="text-xs uppercase tracking-widest text-luxury-gold font-bold">Calculated at checkout</span>
+                <div className="flex flex-col">
+                  <span className="font-light tracking-wide">Shipping</span>
+                  <span className="text-[10px] text-luxury-gold font-bold uppercase tracking-widest">৳120 per item</span>
+                </div>
+                <span className="font-medium">{formatPrice(shippingTotal)}</span>
               </div>
               <div className="border-t border-luxury-gold/10 pt-4 flex justify-between text-xl font-serif">
                 <span>Total</span>

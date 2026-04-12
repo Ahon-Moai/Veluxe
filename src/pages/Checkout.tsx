@@ -5,18 +5,22 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Checkbox } from '../components/ui/checkbox';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { db } from '../lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../lib/errorHandlers';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
+import { CheckCircle2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
 export default function Checkout() {
-  const { cart, total, clearCart } = useCart();
+  const { cart, total, shippingTotal, clearCart, updateSize } = useCart();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [orderId, setOrderId] = useState('');
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
     address: '',
     city: '',
     phone: '',
@@ -30,26 +34,33 @@ export default function Checkout() {
     e.preventDefault();
     if (cart.length === 0) return;
 
+    // Check if all items have a size selected
+    const missingSize = cart.find(item => !item.size);
+    if (missingSize) {
+      toast.error(`Please select a size for ${missingSize.name}`);
+      return;
+    }
+
     setLoading(true);
     try {
       const orderData = {
         customerName: formData.name,
-        customerEmail: formData.email,
+        customerEmail: 'N/A', // Email removed as requested
         customerAddress: `${formData.address}, ${formData.city}`,
         customerPhone: formData.phone,
         items: cart,
         totalAmount: total,
+        shippingCost: shippingTotal,
         status: 'pending',
         paymentMethod: 'COD',
         createdAt: new Date().toISOString(),
       };
 
       try {
-        await addDoc(collection(db, 'orders'), orderData);
-        
-        toast.success('Order placed successfully!');
+        const docRef = await addDoc(collection(db, 'orders'), orderData);
+        setOrderId(docRef.id);
+        setShowSuccess(true);
         clearCart();
-        navigate('/');
       } catch (error) {
         handleFirestoreError(error, OperationType.CREATE, 'orders');
       }
@@ -60,6 +71,8 @@ export default function Checkout() {
       setLoading(false);
     }
   };
+
+  const subtotal = total - shippingTotal;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
@@ -76,17 +89,6 @@ export default function Checkout() {
                   id="name" 
                   value={formData.name} 
                   onChange={e => setFormData({...formData, name: e.target.value})} 
-                  required 
-                  className="rounded-none border-gray-200"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  value={formData.email} 
-                  onChange={e => setFormData({...formData, email: e.target.value})} 
                   required 
                   className="rounded-none border-gray-200"
                 />
@@ -145,17 +147,47 @@ export default function Checkout() {
             <h2 className="text-2xl font-serif mb-6 pb-4 border-b border-luxury-gold/10">Your Order</h2>
             <div className="space-y-6 mb-8">
               {cart.map((item) => (
-                <div key={item.productId} className="flex justify-between items-start text-sm">
-                  <div className="flex flex-col">
-                    <span className="text-luxury-black font-medium">{item.name}</span>
-                    <span className="text-gray-400 text-[10px] uppercase tracking-widest">Qty: {item.quantity}</span>
+                <div key={item.productId} className="space-y-3 pb-4 border-b border-gray-50 last:border-0">
+                  <div className="flex justify-between items-start text-sm">
+                    <div className="flex flex-col">
+                      <span className="text-luxury-black font-medium">{item.name}</span>
+                      <span className="text-gray-400 text-[10px] uppercase tracking-widest">Qty: {item.quantity}</span>
+                    </div>
+                    <span className="font-serif text-luxury-black">{formatPrice(item.price * item.quantity)}</span>
                   </div>
-                  <span className="font-serif text-luxury-black">{formatPrice(item.price * item.quantity)}</span>
+                  <div className="flex items-center space-x-4">
+                    <Label className="text-[10px] uppercase tracking-widest text-gray-400">Size:</Label>
+                    <Select value={item.size} onValueChange={(value) => updateSize(item.productId, value)}>
+                      <SelectTrigger className="w-24 h-8 text-xs rounded-none border-gray-200">
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="S">Small (S)</SelectItem>
+                        <SelectItem value="M">Medium (M)</SelectItem>
+                        <SelectItem value="L">Large (L)</SelectItem>
+                        <SelectItem value="XL">Extra Large (XL)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               ))}
-              <div className="border-t border-luxury-gold/10 pt-6 flex justify-between items-center">
-                <span className="text-lg font-serif">Total Amount</span>
-                <span className="text-2xl font-serif text-luxury-black">{formatPrice(total)}</span>
+              
+              <div className="space-y-2 pt-4">
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>Subtotal</span>
+                  <span>{formatPrice(subtotal)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-gray-500">
+                  <div className="flex flex-col">
+                    <span>Shipping</span>
+                    <span className="text-[10px] text-luxury-gold font-bold uppercase tracking-widest">৳120 per item</span>
+                  </div>
+                  <span>{formatPrice(shippingTotal)}</span>
+                </div>
+                <div className="border-t border-luxury-gold/10 pt-6 flex justify-between items-center">
+                  <span className="text-lg font-serif">Total Amount</span>
+                  <span className="text-2xl font-serif text-luxury-black">{formatPrice(total)}</span>
+                </div>
               </div>
             </div>
             <Button 
@@ -173,6 +205,39 @@ export default function Checkout() {
           </div>
         </div>
       </form>
+
+      {/* Success Modal */}
+      <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
+        <DialogContent className="sm:max-w-md text-center py-12">
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center">
+              <CheckCircle2 className="w-10 h-10 text-green-500" />
+            </div>
+          </div>
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-serif mb-2">Order Confirmed</DialogTitle>
+            <DialogDescription className="text-gray-500 font-light">
+              Thank you for your purchase. Your order has been placed successfully and is being processed.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-luxury-cream/30 p-6 my-8 border border-luxury-gold/10">
+            <p className="text-xs uppercase tracking-widest text-gray-400 mb-1">Order Reference</p>
+            <p className="font-mono text-luxury-black font-bold">{orderId}</p>
+          </div>
+          <div className="space-y-4">
+            <Button 
+              onClick={() => navigate('/')}
+              className="w-full bg-luxury-black text-white py-6 rounded-none group"
+            >
+              CONTINUE SHOPPING
+              <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Button>
+            <Link to="/" className="block text-xs uppercase tracking-widest text-luxury-gold font-bold hover:underline">
+              View Order Status
+            </Link>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

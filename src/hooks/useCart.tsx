@@ -3,14 +3,18 @@ import { Product, OrderItem } from '../types';
 
 interface CartContextType {
   cart: OrderItem[];
-  addToCart: (product: Product) => void;
+  addToCart: (product: Product, size?: string) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
+  updateSize: (productId: string, size: string) => void;
   clearCart: () => void;
   total: number;
+  shippingTotal: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+
+const SHIPPING_PER_ITEM = 120;
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<OrderItem[]>(() => {
@@ -22,15 +26,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('veluxe_cart', JSON.stringify(cart));
   }, [cart]);
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, size?: string) => {
     setCart(prev => {
-      const existing = prev.find(item => item.productId === product.id);
+      const existing = prev.find(item => item.productId === product.id && item.size === size);
       if (existing) {
         return prev.map(item => 
-          item.productId === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          (item.productId === product.id && item.size === size) ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...prev, { productId: product.id!, name: product.name, price: product.price, quantity: 1 }];
+      return [...prev, { productId: product.id!, name: product.name, price: product.price, quantity: 1, size }];
     });
   };
 
@@ -45,12 +49,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     ));
   };
 
+  const updateSize = (productId: string, size: string) => {
+    setCart(prev => prev.map(item => 
+      item.productId === productId ? { ...item, size } : item
+    ));
+  };
+
   const clearCart = () => setCart([]);
 
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const shippingTotal = cart.reduce((sum, item) => sum + (SHIPPING_PER_ITEM * item.quantity), 0);
+  const total = subtotal + shippingTotal;
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, total }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, updateSize, clearCart, total, shippingTotal }}>
       {children}
     </CartContext.Provider>
   );

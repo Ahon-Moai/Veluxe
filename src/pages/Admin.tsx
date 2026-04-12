@@ -241,6 +241,25 @@ function AdminProducts() {
     category: '',
     stock: ''
   });
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData({ ...formData, image: reader.result as string });
+      setUploading(false);
+      toast.success('Image uploaded successfully');
+    };
+    reader.onerror = () => {
+      setUploading(false);
+      toast.error('Failed to read file');
+    };
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
@@ -321,8 +340,26 @@ function AdminProducts() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="image">Image URL</Label>
-                <Input id="image" value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} required />
+                <Label htmlFor="image">Product Image</Label>
+                <div className="flex flex-col space-y-2">
+                  <Input 
+                    id="image-file" 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleImageUpload} 
+                    className="cursor-pointer"
+                  />
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-gray-400">Or URL:</span>
+                    <Input id="image" value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} required />
+                  </div>
+                  {formData.image && (
+                    <div className="mt-2 relative w-20 h-20 border rounded overflow-hidden">
+                      <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  {uploading && <p className="text-xs text-luxury-gold animate-pulse">Processing image...</p>}
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -442,8 +479,26 @@ function AdminOrders() {
                     <span className="text-xs text-gray-500">{order.customerEmail}</span>
                   </div>
                 </TableCell>
-                <TableCell>{order.items.length} items</TableCell>
-                <TableCell>{formatPrice(order.totalAmount)}</TableCell>
+                <TableCell>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm">{order.items.length} items</span>
+                    <div className="flex flex-wrap gap-1">
+                      {order.items.map((item, idx) => (
+                        <span key={idx} className="text-[10px] bg-gray-100 px-1 rounded">
+                          {item.quantity}x {item.size || 'N/A'}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col">
+                    <span>{formatPrice(order.totalAmount)}</span>
+                    {order.shippingCost && (
+                      <span className="text-[10px] text-gray-400">Incl. {formatPrice(order.shippingCost)} shipping</span>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     order.status === 'delivered' ? 'bg-green-100 text-green-700' :

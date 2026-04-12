@@ -14,6 +14,7 @@ export interface OrderItem {
   name: string;
   price: number;
   quantity: number;
+  size?: string;
 }
 
 export interface Order {
@@ -24,6 +25,7 @@ export interface Order {
   customerPhone: string;
   items: OrderItem[];
   totalAmount: number;
+  shippingCost?: number;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   paymentMethod: 'COD';
   createdAt: string;
