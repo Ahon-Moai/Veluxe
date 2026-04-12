@@ -2,6 +2,7 @@ import { useCart } from '../hooks/useCart';
 import { Button } from '../components/ui/button';
 import { Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { SafeImage } from '../components/SafeImage';
 
 export default function Cart() {
   const { cart, updateQuantity, removeFromCart, total, shippingTotal } = useCart();
@@ -33,14 +34,13 @@ export default function Cart() {
         <div className="lg:col-span-2 space-y-12">
           {cart.map((item) => (
             <div key={`${item.productId}-${item.size}`} className="flex flex-col sm:flex-row items-center sm:items-start space-y-6 sm:space-y-0 sm:space-x-8 py-8 border-b border-gray-100 last:border-0">
-              <div className="w-32 h-40 bg-luxury-cream flex-shrink-0 border border-gray-50 shadow-sm overflow-hidden">
-                <img 
-                  src={item.image} 
-                  alt={item.name} 
-                  className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
+              <SafeImage 
+                src={item.image} 
+                alt={item.name} 
+                fallbackSeed={item.productId}
+                containerClassName="w-32 h-40 flex-shrink-0 border border-gray-50 shadow-sm"
+                className="w-full h-full object-cover"
+              />
               <div className="flex-1 text-center sm:text-left">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4">
                   <div>

@@ -12,6 +12,7 @@ import { handleFirestoreError, OperationType } from '../lib/errorHandlers';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import { CheckCircle2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { SafeImage } from '../components/SafeImage';
 
 export default function Checkout() {
   const { cart, total, shippingTotal, clearCart, updateSize } = useCart();
@@ -164,9 +165,13 @@ export default function Checkout() {
             <div className="space-y-8 mb-10 max-h-[40vh] overflow-y-auto pr-4 custom-scrollbar">
               {cart.map((item) => (
                 <div key={`${item.productId}-${item.size}`} className="flex space-x-6 pb-6 border-b border-white/5 last:border-0">
-                  <div className="w-20 h-24 bg-white/10 flex-shrink-0 overflow-hidden">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover opacity-80" />
-                  </div>
+                  <SafeImage 
+                    src={item.image} 
+                    alt={item.name} 
+                    fallbackSeed={item.productId}
+                    containerClassName="w-20 h-24 flex-shrink-0"
+                    className="w-full h-full object-cover opacity-80"
+                  />
                   <div className="flex-1 space-y-2">
                     <div className="flex justify-between items-start">
                       <h3 className="text-sm font-serif italic tracking-wide">{item.name}</h3>

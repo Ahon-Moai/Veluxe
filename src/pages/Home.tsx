@@ -8,6 +8,7 @@ import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestor
 import { Product } from '../types';
 import { useCart } from '../hooks/useCart';
 import { toast } from 'sonner';
+import { SafeImage } from '../components/SafeImage';
 
 const categories = [
   { name: 'Timepieces', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800' },
@@ -171,11 +172,12 @@ export default function Home() {
                 transition={{ delay: i * 0.1 }}
                 className="group relative h-[500px] overflow-hidden cursor-pointer"
               >
-                <img 
+                <SafeImage 
                   src={cat.image} 
                   alt={cat.name} 
+                  fallbackSeed={cat.name}
+                  containerClassName="w-full h-full"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300" />
                 <div className="absolute bottom-8 left-8">
@@ -216,14 +218,16 @@ export default function Home() {
                   className="group flex flex-col"
                 >
                   <div className="relative w-full aspect-[4/5] mb-8 overflow-hidden bg-[#f9f9f9]">
-                    <motion.img 
-                      whileHover={{ scale: 1.08 }}
-                      transition={{ duration: 0.8, ease: "easeOut" }}
-                      src={product.image} 
+                    <SafeImage 
+                      src={product.image.includes('unsplash.com') && !product.image.includes('w=') 
+                        ? `${product.image}&w=800&q=80` 
+                        : product.image} 
                       alt={product.name} 
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      referrerPolicy="no-referrer"
+                      fallbackSeed={product.id}
+                      containerClassName="w-full h-full"
+                      className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
+                      loading={index < 4 ? "eager" : "lazy"}
+                      decoding={index < 4 ? "sync" : "async"}
                     />
                     {product.stock === 0 && (
                       <div className="absolute top-6 left-6 bg-white px-4 py-1.5 text-[9px] tracking-[0.2em] uppercase font-semibold border border-gray-100 shadow-sm z-10">
