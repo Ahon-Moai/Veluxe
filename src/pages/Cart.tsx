@@ -32,10 +32,10 @@ export default function Cart() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
         <div className="lg:col-span-2 space-y-12">
           {cart.map((item) => (
-            <div key={item.productId} className="flex flex-col sm:flex-row items-center sm:items-start space-y-6 sm:space-y-0 sm:space-x-8 py-8 border-b border-gray-100 last:border-0">
+            <div key={`${item.productId}-${item.size}`} className="flex flex-col sm:flex-row items-center sm:items-start space-y-6 sm:space-y-0 sm:space-x-8 py-8 border-b border-gray-100 last:border-0">
               <div className="w-32 h-40 bg-luxury-cream flex-shrink-0 border border-gray-50 shadow-sm overflow-hidden">
                 <img 
-                  src={item.productId.startsWith('data:') ? item.productId : `https://picsum.photos/seed/${item.productId}/300/400`} 
+                  src={item.image} 
                   alt={item.name} 
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
@@ -56,14 +56,14 @@ export default function Cart() {
                 <div className="flex flex-col sm:flex-row items-center sm:justify-between mt-6 space-y-4 sm:space-y-0">
                   <div className="flex items-center border border-gray-200 bg-white">
                     <button 
-                      onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                      onClick={() => updateQuantity(item.productId, item.quantity - 1, item.size)}
                       className="p-3 hover:bg-gray-50 transition-colors"
                     >
                       <Minus className="w-3 h-3" />
                     </button>
                     <span className="w-12 text-center font-medium text-sm">{item.quantity}</span>
                     <button 
-                      onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                      onClick={() => updateQuantity(item.productId, item.quantity + 1, item.size)}
                       className="p-3 hover:bg-gray-50 transition-colors"
                     >
                       <Plus className="w-3 h-3" />
@@ -71,7 +71,7 @@ export default function Cart() {
                   </div>
                   
                   <button 
-                    onClick={() => removeFromCart(item.productId)}
+                    onClick={() => removeFromCart(item.productId, item.size)}
                     className="flex items-center space-x-2 text-red-400 hover:text-red-600 transition-colors text-xs uppercase tracking-widest font-medium"
                   >
                     <Trash2 className="w-4 h-4" />

@@ -72,136 +72,157 @@ export default function Checkout() {
     }
   };
 
-  const subtotal = total - shippingTotal;
-
-  return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
-      <h1 className="text-4xl font-serif mb-12">Checkout</h1>
+  const subtotal = total - shippingTotal;  return (
+    <div className="max-w-7xl mx-auto px-4 py-24">
+      <div className="flex items-center justify-between mb-12">
+        <h1 className="text-5xl md:text-6xl font-serif">Checkout</h1>
+        <Link to="/cart" className="text-sm tracking-[0.2em] text-gray-400 hover:text-luxury-gold transition-colors flex items-center group">
+          <ArrowRight className="w-4 h-4 mr-2 rotate-180 transition-transform group-hover:-translate-x-1" />
+          RETURN TO CART
+        </Link>
+      </div>
       
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-        <div className="space-y-8">
-          <section>
-            <h2 className="text-xl font-serif mb-6 border-b pb-2">Shipping Information</h2>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+        <div className="lg:col-span-7 space-y-12">
+          <section className="bg-white p-8 border border-gray-100 shadow-sm">
+            <div className="flex items-center space-x-4 mb-8">
+              <div className="w-8 h-8 rounded-full bg-luxury-black text-white flex items-center justify-center text-xs font-bold">1</div>
+              <h2 className="text-2xl font-serif">Shipping Information</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="name" className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Full Name</Label>
                 <Input 
                   id="name" 
+                  placeholder="John Doe"
                   value={formData.name} 
                   onChange={e => setFormData({...formData, name: e.target.value})} 
                   required 
-                  className="rounded-none border-gray-200"
+                  className="rounded-none border-gray-200 h-14 focus-visible:ring-luxury-gold"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone" className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Phone Number</Label>
                 <Input 
                   id="phone" 
                   type="tel" 
+                  placeholder="+880 1XXX XXXXXX"
                   value={formData.phone} 
                   onChange={e => setFormData({...formData, phone: e.target.value})} 
                   required 
-                  className="rounded-none border-gray-200"
+                  className="rounded-none border-gray-200 h-14 focus-visible:ring-luxury-gold"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="address">Street Address</Label>
-                <Input 
-                  id="address" 
-                  value={formData.address} 
-                  onChange={e => setFormData({...formData, address: e.target.value})} 
-                  required 
-                  className="rounded-none border-gray-200"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
+                <Label htmlFor="city" className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">City</Label>
                 <Input 
                   id="city" 
+                  placeholder="Dhaka"
                   value={formData.city} 
                   onChange={e => setFormData({...formData, city: e.target.value})} 
                   required 
-                  className="rounded-none border-gray-200"
+                  className="rounded-none border-gray-200 h-14 focus-visible:ring-luxury-gold"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="address" className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Street Address</Label>
+                <Input 
+                  id="address" 
+                  placeholder="House #, Road #, Area"
+                  value={formData.address} 
+                  onChange={e => setFormData({...formData, address: e.target.value})} 
+                  required 
+                  className="rounded-none border-gray-200 h-14 focus-visible:ring-luxury-gold"
                 />
               </div>
             </div>
           </section>
 
-          <section>
-            <h2 className="text-xl font-serif mb-6 border-b pb-2">Payment Method</h2>
-            <div className="p-6 border border-luxury-gold bg-luxury-gold/5 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-4 h-4 rounded-full border-2 border-luxury-gold bg-luxury-gold" />
-                <span className="font-medium">Cash on Delivery (COD)</span>
-              </div>
-              <span className="text-xs text-luxury-gold font-bold uppercase tracking-widest">Selected</span>
+          <section className="bg-white p-8 border border-gray-100 shadow-sm">
+            <div className="flex items-center space-x-4 mb-8">
+              <div className="w-8 h-8 rounded-full bg-luxury-black text-white flex items-center justify-center text-xs font-bold">2</div>
+              <h2 className="text-2xl font-serif">Payment Method</h2>
             </div>
-            <p className="text-sm text-gray-500 mt-4">
-              Pay with cash upon delivery. Our courier will contact you to confirm the delivery time.
-            </p>
+            <div className="p-6 border-2 border-luxury-gold bg-luxury-gold/5 flex items-center justify-between group cursor-pointer">
+              <div className="flex items-center space-x-4">
+                <div className="w-5 h-5 rounded-full border-2 border-luxury-gold flex items-center justify-center">
+                  <div className="w-2.5 h-2.5 rounded-full bg-luxury-gold" />
+                </div>
+                <div>
+                  <span className="font-serif text-lg block">Cash on Delivery (COD)</span>
+                  <span className="text-[10px] text-gray-400 uppercase tracking-widest">Pay when you receive your order</span>
+                </div>
+              </div>
+              <CheckCircle2 className="text-luxury-gold w-6 h-6" />
+            </div>
           </section>
         </div>
 
-        <div className="lg:col-span-1">
-          <div className="bg-white p-8 border-2 border-luxury-gold/30 shadow-2xl sticky top-24 rounded-sm">
-            <h2 className="text-2xl font-serif mb-6 pb-4 border-b border-luxury-gold/10">Your Order</h2>
-            <div className="space-y-6 mb-8">
+        <div className="lg:col-span-5">
+          <div className="bg-luxury-black text-white p-10 sticky top-32 shadow-2xl">
+            <h2 className="text-3xl font-serif mb-10 pb-6 border-b border-white/10">Order Summary</h2>
+            <div className="space-y-8 mb-10 max-h-[40vh] overflow-y-auto pr-4 custom-scrollbar">
               {cart.map((item) => (
-                <div key={item.productId} className="space-y-3 pb-4 border-b border-gray-50 last:border-0">
-                  <div className="flex justify-between items-start text-sm">
-                    <div className="flex flex-col">
-                      <span className="text-luxury-black font-medium">{item.name}</span>
-                      <span className="text-gray-400 text-[10px] uppercase tracking-widest">Qty: {item.quantity}</span>
-                    </div>
-                    <span className="font-serif text-luxury-black">{formatPrice(item.price * item.quantity)}</span>
+                <div key={`${item.productId}-${item.size}`} className="flex space-x-6 pb-6 border-b border-white/5 last:border-0">
+                  <div className="w-20 h-24 bg-white/10 flex-shrink-0 overflow-hidden">
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover opacity-80" />
                   </div>
-                  <div className="flex items-center space-x-4">
-                    <Label className="text-[10px] uppercase tracking-widest text-gray-400">Size:</Label>
-                    <Select value={item.size} onValueChange={(value) => updateSize(item.productId, value)}>
-                      <SelectTrigger className="w-24 h-8 text-xs rounded-none border-gray-200">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="S">Small (S)</SelectItem>
-                        <SelectItem value="M">Medium (M)</SelectItem>
-                        <SelectItem value="L">Large (L)</SelectItem>
-                        <SelectItem value="XL">Extra Large (XL)</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="flex-1 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-sm font-serif italic tracking-wide">{item.name}</h3>
+                      <span className="text-sm font-light">{formatPrice(item.price * item.quantity)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-white/40 uppercase tracking-widest">Qty: {item.quantity}</span>
+                      <div className="flex items-center space-x-3">
+                        <span className="text-[10px] text-white/40 uppercase tracking-widest">Size:</span>
+                        <Select value={item.size} onValueChange={(value) => updateSize(item.productId, item.size, value)}>
+                          <SelectTrigger className="w-20 h-7 text-[10px] rounded-none border-white/10 bg-transparent text-white focus:ring-luxury-gold">
+                            <SelectValue placeholder="Size" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-luxury-black border-white/10 text-white">
+                            <SelectItem value="S">S</SelectItem>
+                            <SelectItem value="M">M</SelectItem>
+                            <SelectItem value="L">L</SelectItem>
+                            <SelectItem value="XL">XL</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
-              
-              <div className="space-y-2 pt-4">
-                <div className="flex justify-between text-sm text-gray-500">
-                  <span>Subtotal</span>
-                  <span>{formatPrice(subtotal)}</span>
+            </div>
+            
+            <div className="space-y-4 pt-6 border-t border-white/10">
+              <div className="flex justify-between text-sm text-white/60">
+                <span className="font-light tracking-wide">Subtotal</span>
+                <span>{formatPrice(subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-sm text-white/60">
+                <div className="flex flex-col">
+                  <span className="font-light tracking-wide">Shipping</span>
+                  <span className="text-[9px] text-luxury-gold font-bold uppercase tracking-[0.2em]">৳120 per item</span>
                 </div>
-                <div className="flex justify-between text-sm text-gray-500">
-                  <div className="flex flex-col">
-                    <span>Shipping</span>
-                    <span className="text-[10px] text-luxury-gold font-bold uppercase tracking-widest">৳120 per item</span>
-                  </div>
-                  <span>{formatPrice(shippingTotal)}</span>
-                </div>
-                <div className="border-t border-luxury-gold/10 pt-6 flex justify-between items-center">
-                  <span className="text-lg font-serif">Total Amount</span>
-                  <span className="text-2xl font-serif text-luxury-black">{formatPrice(total)}</span>
-                </div>
+                <span>{formatPrice(shippingTotal)}</span>
+              </div>
+              <div className="pt-8 flex justify-between items-center border-t border-white/10 mt-6">
+                <span className="text-xl font-serif">Total</span>
+                <span className="text-3xl font-serif text-luxury-gold">{formatPrice(total)}</span>
               </div>
             </div>
+
             <Button 
               type="submit" 
               disabled={loading || cart.length === 0}
-              className="w-full bg-luxury-black text-white py-8 rounded-none text-sm tracking-[0.2em] font-medium hover:bg-luxury-black/90 transition-all shadow-lg"
+              className="w-full bg-luxury-gold text-white py-10 mt-12 rounded-none text-xs tracking-[0.4em] font-bold hover:bg-white hover:text-luxury-black transition-all duration-500 shadow-2xl"
             >
-              {loading ? 'PROCESSING...' : 'PLACE ORDER'}
+              {loading ? 'PROCESSING ORDER...' : 'PLACE ORDER NOW'}
             </Button>
-            <div className="mt-8 p-4 bg-white/50 border border-luxury-gold/10 text-center">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400">
-                By placing an order, you agree to our <span className="text-luxury-gold underline cursor-pointer">Terms of Service</span>
-              </p>
-            </div>
+            
+            <p className="text-[9px] text-center mt-8 text-white/30 uppercase tracking-[0.3em] leading-relaxed">
+              Secure encrypted checkout • Free luxury packaging • 24/7 Support
+            </p>
           </div>
         </div>
       </form>

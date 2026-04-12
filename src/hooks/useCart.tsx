@@ -4,9 +4,9 @@ import { Product, OrderItem } from '../types';
 interface CartContextType {
   cart: OrderItem[];
   addToCart: (product: Product, size?: string) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  updateSize: (productId: string, size: string) => void;
+  removeFromCart: (productId: string, size?: string) => void;
+  updateQuantity: (productId: string, quantity: number, size?: string) => void;
+  updateSize: (productId: string, oldSize: string | undefined, newSize: string) => void;
   clearCart: () => void;
   total: number;
   shippingTotal: number;
@@ -34,25 +34,52 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           (item.productId === product.id && item.size === size) ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...prev, { productId: product.id!, name: product.name, price: product.price, quantity: 1, size }];
+      return [...prev, { 
+        productId: product.id!, 
+        name: product.name, 
+        price: product.price, 
+        quantity: 1, 
+        size,
+        image: product.image 
+      }];
     });
   };
 
-  const removeFromCart = (productId: string) => {
-    setCart(prev => prev.filter(item => item.productId !== productId));
+  const removeFromCart = (productId: string, size?: string) => {
+    setCart(prev => prev.filter(item => !(item.productId === productId && item.size === size)));
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number, size?: string) => {
     if (quantity < 1) return;
     setCart(prev => prev.map(item => 
-      item.productId === productId ? { ...item, quantity } : item
+      (item.productId === productId && item.size === size) ? { ...item, quantity } : item
     ));
   };
 
-  const updateSize = (productId: string, size: string) => {
-    setCart(prev => prev.map(item => 
-      item.productId === productId ? { ...item, size } : item
-    ));
+  const updateSize = (productId: string, oldSize: string | undefined, newSize: string) => {
+    setCart(prev => {
+      // Check if an item with the new size already exists
+      const existingWithNewSize = prev.find(item => item.productId === productId && item.size === newSize);
+      
+      if (existingWithNewSize) {
+        // If it exists, remove the old one and add its quantity to the existing one
+        const oldItem = prev.find(item => item.productId === productId && item.size === oldSize);
+        if (!oldItem) return prev;
+
+        return prev
+          .filter(item => !(item.productId === productId && item.size === oldSize))
+          .map(item => 
+            (item.productId === productId && item.size === newSize) 
+              ? { ...item, quantity: item.quantity + oldItem.quantity } 
+              : item
+          );
+      }
+
+      // Otherwise just update the size
+      return prev.map(item => 
+        (item.productId === productId && item.size === oldSize) ? { ...item, size: newSize } : item
+      );
+    });
   };
 
   const clearCart = () => setCart([]);

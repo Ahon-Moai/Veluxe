@@ -15,6 +15,7 @@ export interface OrderItem {
   price: number;
   quantity: number;
   size?: string;
+  image: string;
 }
 
 export interface Order {
