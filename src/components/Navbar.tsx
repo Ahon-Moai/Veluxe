@@ -31,11 +31,6 @@ export default function Navbar() {
               <Link 
                 key={link.name} 
                 to={link.path} 
-                onMouseEnter={() => {
-                  if (link.path === '/products') {
-                    import('../pages/Products');
-                  }
-                }}
                 className="text-[10px] tracking-[0.3em] font-medium hover:text-luxury-gold transition-colors duration-300"
               >
                 {link.name}
