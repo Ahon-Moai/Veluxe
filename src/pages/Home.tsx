@@ -9,6 +9,7 @@ import { Product } from '../types';
 import { useCart } from '../hooks/useCart';
 import { toast } from 'sonner';
 import { SafeImage } from '../components/SafeImage';
+import { LoadingText } from '../components/LoadingText';
 
 const categories = [
   { name: 'Timepieces', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800' },
@@ -262,15 +263,7 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-20">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <div key={i} className="animate-pulse flex flex-col">
-                  <div className="aspect-[4/5] bg-gray-50 mb-8" />
-                  <div className="h-4 bg-gray-50 w-3/4 mx-auto mb-3" />
-                  <div className="h-4 bg-gray-50 w-1/2 mx-auto" />
-                </div>
-              ))}
-            </div>
+            <LoadingText />
           )}
 
           {featuredProducts.length >= 12 && (

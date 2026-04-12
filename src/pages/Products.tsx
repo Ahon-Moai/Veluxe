@@ -7,6 +7,7 @@ import { useCart } from '../hooks/useCart';
 import { toast } from 'sonner';
 import { SafeImage } from '../components/SafeImage';
 import { Button } from '../components/ui/button';
+import { LoadingText } from '../components/LoadingText';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, SlidersHorizontal } from 'lucide-react';
 import { Input } from '../components/ui/input';
@@ -80,15 +81,7 @@ export default function Products() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-20">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="animate-pulse flex flex-col">
-                <div className="aspect-[4/5] bg-gray-50 mb-8" />
-                <div className="h-4 bg-gray-50 w-3/4 mx-auto mb-3" />
-                <div className="h-4 bg-gray-50 w-1/2 mx-auto" />
-              </div>
-            ))}
-          </div>
+          <LoadingText />
         ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-20">
             {filteredProducts.map((product, index) => (
