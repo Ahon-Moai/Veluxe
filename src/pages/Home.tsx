@@ -167,6 +167,7 @@ export default function Home() {
                 key={cat.name}
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
                 className="group relative h-[500px] overflow-hidden cursor-pointer"
               >
@@ -235,11 +236,11 @@ export default function Home() {
                     <h3 className="text-base font-serif italic tracking-wide text-luxury-black group-hover:text-luxury-gold transition-colors duration-300">{product.name}</h3>
                     <p className="text-sm font-light tracking-[0.15em] text-gray-500">{formatPrice(product.price)}</p>
                     
-                    <div className="grid grid-cols-2 gap-3 w-full pt-6 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
+                    <div className="grid grid-cols-2 gap-3 w-full pt-6 transition-all duration-500">
                       <Button 
                         onClick={() => handleBuyNow(product)}
                         disabled={product.stock === 0}
-                        className="bg-luxury-black text-white hover:bg-luxury-black/90 rounded-none h-11 text-[9px] tracking-[0.25em] font-medium"
+                        className="bg-luxury-black text-white hover:bg-luxury-gold rounded-none h-11 text-[9px] tracking-[0.25em] font-medium transition-colors duration-300"
                       >
                         BUY NOW
                       </Button>
@@ -247,7 +248,7 @@ export default function Home() {
                         onClick={() => handleAddToCart(product)}
                         disabled={product.stock === 0}
                         variant="outline"
-                        className="border-luxury-black text-luxury-black hover:bg-luxury-black hover:text-white rounded-none h-11 text-[9px] tracking-[0.25em] font-medium transition-colors"
+                        className="border-luxury-black text-luxury-black hover:bg-luxury-black hover:text-white rounded-none h-11 text-[9px] tracking-[0.25em] font-medium transition-colors duration-300"
                       >
                         ADD TO CART
                       </Button>
