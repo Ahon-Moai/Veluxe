@@ -1,0 +1,52 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "An item for sale in the store",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the product" },
+        "description": { "type": "string", "description": "Detailed description" },
+        "price": { "type": "number", "description": "Price in USD" },
+        "image": { "type": "string", "description": "URL to product image" },
+        "category": { "type": "string", "description": "Product category" },
+        "stock": { "type": "number", "description": "Available quantity" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "price", "image"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A customer order",
+      "type": "object",
+      "properties": {
+        "customerName": { "type": "string" },
+        "customerEmail": { "type": "string", "format": "email" },
+        "customerAddress": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "items": { 
+          "type": "array",
+          "description": "List of items purchased"
+        },
+        "totalAmount": { "type": "number" },
+        "status": { 
+          "type": "string",
+          "enum": ["pending", "processing", "shipped", "delivered", "cancelled"]
+        },
+        "paymentMethod": { "type": "string", "enum": ["COD"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["customerName", "customerAddress", "items", "totalAmount", "status"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Collection of products"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Collection of orders"
+    }
+  }
+}
