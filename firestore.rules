@@ -47,9 +47,12 @@ service cloud.firestore {
       return data.keys().hasAll(['name', 'price', 'image']) &&
              data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
              data.price is number && data.price >= 0 &&
-             data.image is string && data.image.matches("^https?://.*") &&
+             data.image is string && data.image.size() < 1048576 && 
+             (data.image.matches("^https?://.*") || data.image.matches("^data:image/.*")) &&
              (!('stock' in data) || (data.stock is number && data.stock >= 0)) &&
-             (!('category' in data) || (data.category is string && data.category.size() < 100));
+             (!('category' in data) || (data.category is string && data.category.size() < 100)) &&
+             (!('description' in data) || (data.description is string && data.description.size() < 2000)) &&
+             (!('createdAt' in data) || (data.createdAt is string));
     }
 
     function isValidOrder(data) {

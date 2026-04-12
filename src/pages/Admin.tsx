@@ -274,7 +274,13 @@ function AdminProducts() {
 
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData({ ...formData, image: reader.result as string });
+        const result = reader.result as string;
+        if (result.length > 1048576) {
+          setUploading(false);
+          toast.error('Image is too large. Please choose a smaller file (max 1MB).');
+          return;
+        }
+        setFormData({ ...formData, image: result });
         setUploading(false);
         toast.success('Image uploaded successfully');
       };
@@ -302,10 +308,18 @@ function AdminProducts() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const price = parseFloat(formData.price);
+      const stock = parseInt(formData.stock);
+
+      if (isNaN(price) || isNaN(stock)) {
+        toast.error('Please enter valid numbers for price and stock');
+        return;
+      }
+
       const data = {
         ...formData,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
+        price,
+        stock,
         createdAt: new Date().toISOString()
       };
 
@@ -328,7 +342,21 @@ function AdminProducts() {
       setEditingProduct(null);
       setFormData({ name: '', description: '', price: '', image: '', category: '', stock: '' });
     } catch (error) {
-      toast.error('Error saving product');
+      console.error('Error in handleSave:', error);
+      if (error instanceof Error) {
+        try {
+          const parsedError = JSON.parse(error.message);
+          if (parsedError.error && parsedError.error.includes('Missing or insufficient permissions')) {
+            toast.error('Permission denied. Please check if all fields are valid.');
+          } else {
+            toast.error('Error saving product: ' + (parsedError.error || error.message));
+          }
+        } catch {
+          toast.error('Error saving product: ' + error.message);
+        }
+      } else {
+        toast.error('Error saving product');
+      }
     }
   };
 
