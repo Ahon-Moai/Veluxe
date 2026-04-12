@@ -49,15 +49,9 @@ export default function Admin() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('Admin page mounted, checking auth state...');
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('Auth state changed:', user ? `Logged in as ${user.email}` : 'Not logged in');
       setUser(user);
       setLoading(false);
-    }, (error) => {
-      console.error('Auth state error:', error);
-      setLoading(false);
-      toast.error('Authentication error. Please refresh.');
     });
     return () => unsubscribe();
   }, []);
@@ -91,9 +85,8 @@ export default function Admin() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-luxury-cream">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-luxury-gold mb-4"></div>
-        <p className="text-luxury-gold font-serif italic animate-pulse">Initializing Admin Portal...</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-luxury-gold"></div>
       </div>
     );
   }
@@ -111,13 +104,10 @@ export default function Admin() {
           </p>
           <Button 
             onClick={handleLogin}
-            className="w-full bg-luxury-black text-white py-6 rounded-none hover:bg-luxury-black/90 transition-all mb-4"
+            className="w-full bg-luxury-black text-white py-6 rounded-none hover:bg-luxury-black/90 transition-all"
           >
             SIGN IN WITH GOOGLE
           </Button>
-          <Link to="/" className="text-xs uppercase tracking-widest text-gray-400 hover:text-luxury-gold transition-colors">
-            Back to Storefront
-          </Link>
           {user && user.email !== ADMIN_EMAIL && (
             <p className="mt-4 text-red-500 text-sm">
               Account {user.email} is not authorized.
@@ -331,9 +321,6 @@ function AdminProducts() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const prods = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
       setProducts(prods);
-    }, (error) => {
-      console.error('Error fetching products:', error);
-      handleFirestoreError(error, OperationType.LIST, 'products');
     });
     return () => unsubscribe();
   }, []);
@@ -393,15 +380,14 @@ function AdminProducts() {
     }
   };
 
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-
   const handleDelete = async (id: string) => {
-    try {
-      await deleteDoc(doc(db, 'products', id));
-      toast.success('Product deleted');
-      setDeleteId(null);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, `products/${id}`);
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        await deleteDoc(doc(db, 'products', id));
+        toast.success('Product deleted');
+      } catch (error) {
+        handleFirestoreError(error, OperationType.DELETE, `products/${id}`);
+      }
     }
   };
 
@@ -511,7 +497,7 @@ function AdminProducts() {
                   }}>
                     <Pencil className="w-4 h-4 text-blue-500" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => setDeleteId(product.id!)}>
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(product.id!)}>
                     <Trash2 className="w-4 h-4 text-red-500" />
                   </Button>
                 </TableCell>
@@ -520,19 +506,6 @@ function AdminProducts() {
           </TableBody>
         </Table>
       </Card>
-
-      <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <DialogContent className="sm:max-w-[400px] text-center py-10">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-serif mb-4">Confirm Deletion</DialogTitle>
-          </DialogHeader>
-          <p className="text-gray-500 mb-8">Are you sure you want to remove this product from the collection? This action cannot be undone.</p>
-          <div className="flex space-x-4">
-            <Button variant="outline" onClick={() => setDeleteId(null)} className="flex-1 rounded-none py-6">CANCEL</Button>
-            <Button onClick={() => deleteId && handleDelete(deleteId)} className="flex-1 bg-red-600 text-white hover:bg-red-700 rounded-none py-6">DELETE</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
@@ -545,9 +518,6 @@ function AdminOrders() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const ords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
       setOrders(ords);
-    }, (error) => {
-      console.error('Error fetching orders:', error);
-      handleFirestoreError(error, OperationType.LIST, 'orders');
     });
     return () => unsubscribe();
   }, []);

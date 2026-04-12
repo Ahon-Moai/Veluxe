@@ -5,9 +5,7 @@ import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { Product } from '../types';
 import { useCart } from '../hooks/useCart';
 import { toast } from 'sonner';
-import { SafeImage } from '../components/SafeImage';
 import { Button } from '../components/ui/button';
-import { LoadingText } from '../components/LoadingText';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, SlidersHorizontal } from 'lucide-react';
 import { Input } from '../components/ui/input';
@@ -81,7 +79,15 @@ export default function Products() {
         </div>
 
         {loading ? (
-          <LoadingText />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-20">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="animate-pulse flex flex-col">
+                <div className="aspect-[4/5] bg-gray-50 mb-8" />
+                <div className="h-4 bg-gray-50 w-3/4 mx-auto mb-3" />
+                <div className="h-4 bg-gray-50 w-1/2 mx-auto" />
+              </div>
+            ))}
+          </div>
         ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-20">
             {filteredProducts.map((product, index) => (
@@ -94,16 +100,14 @@ export default function Products() {
                 className="group flex flex-col"
               >
                 <div className="relative w-full aspect-[4/5] mb-8 overflow-hidden bg-[#f9f9f9]">
-                  <SafeImage 
-                    src={product.image.includes('unsplash.com') && !product.image.includes('w=') 
-                      ? `${product.image}&w=800&q=80` 
-                      : product.image} 
+                  <motion.img 
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.6 }}
+                    src={product.image} 
                     alt={product.name} 
-                    fallbackSeed={product.id}
-                    containerClassName="w-full h-full"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading={index < 4 ? "eager" : "lazy"}
-                    decoding={index < 4 ? "sync" : "async"}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
                   />
                   {product.stock === 0 && (
                     <div className="absolute top-6 left-6 bg-white px-4 py-1.5 text-[9px] tracking-[0.2em] uppercase font-semibold border border-gray-100 shadow-sm z-10">

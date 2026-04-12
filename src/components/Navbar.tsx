@@ -31,6 +31,11 @@ export default function Navbar() {
               <Link 
                 key={link.name} 
                 to={link.path} 
+                onMouseEnter={() => {
+                  if (link.path === '/products') {
+                    import('../pages/Products');
+                  }
+                }}
                 className="text-[10px] tracking-[0.3em] font-medium hover:text-luxury-gold transition-colors duration-300"
               >
                 {link.name}
@@ -89,13 +94,6 @@ export default function Navbar() {
                   {link.name}
                 </Link>
               ))}
-              <Link
-                to="/admin"
-                className="block px-3 py-4 text-[10px] tracking-[0.3em] font-medium text-luxury-gold border-b border-gray-50 last:border-0"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                ADMIN PORTAL
-              </Link>
             </div>
           </motion.div>
         )}

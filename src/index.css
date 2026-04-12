@@ -164,13 +164,3 @@
     @apply font-sans;
     }
 }
-
-/* Custom NProgress Styles */
-#nprogress .bar {
-  background: #D4AF37 !important;
-  height: 3px !important;
-}
-
-#nprogress .peg {
-  box-shadow: 0 0 10px #D4AF37, 0 0 5px #D4AF37 !important;
-}
