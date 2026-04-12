@@ -61,7 +61,8 @@ export default function Admin() {
       toast.error(`Login failed: ${errorMessage}`);
       
       if (error.code === 'auth/unauthorized-domain') {
-        toast.error('Domain not authorized. Please add your domain to Firebase Console.');
+        const domain = window.location.hostname;
+        toast.error(`Domain "${domain}" is not authorized. Add it to Firebase Console > Authentication > Settings > Authorized domains.`);
       }
     }
   };

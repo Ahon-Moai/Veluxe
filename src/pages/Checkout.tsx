@@ -136,28 +136,36 @@ export default function Checkout() {
           </section>
         </div>
 
-        <div className="space-y-8">
-          <div className="bg-white p-8 border border-gray-100">
-            <h2 className="text-2xl font-serif mb-6">Your Order</h2>
-            <div className="space-y-4 mb-8">
+        <div className="lg:col-span-1">
+          <div className="bg-luxury-cream/30 p-8 border border-luxury-gold/20 shadow-sm sticky top-24">
+            <h2 className="text-2xl font-serif mb-6 pb-4 border-b border-luxury-gold/10">Your Order</h2>
+            <div className="space-y-6 mb-8">
               {cart.map((item) => (
-                <div key={item.productId} className="flex justify-between text-sm">
-                  <span className="text-gray-600">{item.name} x {item.quantity}</span>
-                  <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                <div key={item.productId} className="flex justify-between items-start text-sm">
+                  <div className="flex flex-col">
+                    <span className="text-luxury-black font-medium">{item.name}</span>
+                    <span className="text-gray-400 text-[10px] uppercase tracking-widest">Qty: {item.quantity}</span>
+                  </div>
+                  <span className="font-serif text-luxury-black">${(item.price * item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                 </div>
               ))}
-              <div className="border-t border-gray-100 pt-4 flex justify-between text-xl font-medium">
-                <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+              <div className="border-t border-luxury-gold/10 pt-6 flex justify-between items-center">
+                <span className="text-lg font-serif">Total Amount</span>
+                <span className="text-2xl font-serif text-luxury-black">${total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
             <Button 
               type="submit" 
               disabled={loading || cart.length === 0}
-              className="w-full bg-luxury-black text-white py-8 rounded-none text-lg tracking-widest hover:bg-luxury-black/90 transition-all"
+              className="w-full bg-luxury-black text-white py-8 rounded-none text-sm tracking-[0.2em] font-medium hover:bg-luxury-black/90 transition-all shadow-lg"
             >
-              {loading ? 'PLACING ORDER...' : 'PLACE ORDER'}
+              {loading ? 'PROCESSING...' : 'PLACE ORDER'}
             </Button>
+            <div className="mt-8 p-4 bg-white/50 border border-luxury-gold/10 text-center">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400">
+                By placing an order, you agree to our <span className="text-luxury-gold underline cursor-pointer">Terms of Service</span>
+              </p>
+            </div>
           </div>
         </div>
       </form>

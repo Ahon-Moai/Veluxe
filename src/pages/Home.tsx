@@ -113,34 +113,50 @@ export default function Home() {
 
       {/* Featured Products */}
       <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-5xl font-serif mb-16">The Signature Collection</h2>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-serif mb-4">The Signature Collection</h2>
+            <div className="w-24 h-1 bg-luxury-gold mx-auto"></div>
+          </div>
+          
           {featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
               {featuredProducts.map((product) => (
-                <div key={product.id} className="group flex flex-col items-center">
-                  <div className="relative w-full aspect-[3/4] mb-6 overflow-hidden bg-luxury-cream">
+                <motion.div 
+                  key={product.id} 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="group flex flex-col"
+                >
+                  <div className="relative w-full aspect-[4/5] mb-6 overflow-hidden bg-luxury-cream border border-gray-100">
                     <img 
                       src={product.image} 
                       alt={product.name} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       referrerPolicy="no-referrer"
                     />
-                    <Button 
-                      onClick={() => handleAddToCart(product)}
-                      className="absolute bottom-4 left-4 right-4 bg-luxury-black text-white rounded-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    >
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      ADD TO CART
-                    </Button>
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                    <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                      <Button 
+                        onClick={() => handleAddToCart(product)}
+                        className="w-full bg-white text-luxury-black hover:bg-luxury-black hover:text-white rounded-none py-6 font-medium tracking-widest transition-all duration-300 shadow-xl"
+                      >
+                        <ShoppingCart className="w-4 h-4 mr-2" />
+                        ADD TO CART
+                      </Button>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-serif mb-2">{product.name}</h3>
-                  <p className="text-luxury-gold font-medium">${product.price.toFixed(2)}</p>
-                </div>
+                  <div className="flex flex-col items-center text-center">
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-2">{product.category || 'Collection'}</p>
+                    <h3 className="text-lg font-serif mb-2 group-hover:text-luxury-gold transition-colors duration-300">{product.name}</h3>
+                    <p className="text-luxury-black font-medium tracking-wider">${product.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                  </div>
+                </motion.div>
               ))}
             </div>
           ) : (
-            <div className="py-12 text-gray-400 font-light">
+            <div className="py-12 text-gray-400 font-light text-center">
               No products available in the signature collection yet.
             </div>
           )}
