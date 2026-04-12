@@ -20,6 +20,7 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { toast } from 'sonner';
 import heic2any from 'heic2any';
+import imageCompression from 'browser-image-compression';
 import { db, auth } from '../lib/firebase';
 import { 
   collection, 
@@ -263,7 +264,7 @@ function AdminProducts() {
         const convertedBlob = await heic2any({
           blob: file,
           toType: 'image/jpeg',
-          quality: 0.8
+          quality: 0.7
         });
         
         const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
@@ -272,17 +273,36 @@ function AdminProducts() {
         });
       }
 
+      // Compress image if it's still large
+      if (fileToRead.size > 500 * 1024) { // If larger than 500KB
+        toast.info('Compressing image...');
+        const options = {
+          maxSizeMB: 0.7,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true
+        };
+        try {
+          const compressedFile = await imageCompression(fileToRead, options);
+          fileToRead = new File([compressedFile], fileToRead.name, {
+            type: compressedFile.type,
+          });
+        } catch (error) {
+          console.error('Compression error:', error);
+        }
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
+        // Final check for base64 size (Firestore 1MB limit)
         if (result.length > 1048576) {
           setUploading(false);
-          toast.error('Image is too large. Please choose a smaller file (max 1MB).');
+          toast.error('Image is still too large after compression. Please use a smaller image.');
           return;
         }
         setFormData({ ...formData, image: result });
         setUploading(false);
-        toast.success('Image uploaded successfully');
+        toast.success('Image uploaded and optimized');
       };
       reader.onerror = () => {
         setUploading(false);
