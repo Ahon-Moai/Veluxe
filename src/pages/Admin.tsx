@@ -55,8 +55,14 @@ export default function Admin() {
     try {
       await signInWithPopup(auth, provider);
       toast.success('Logged in successfully');
-    } catch (error) {
-      toast.error('Login failed');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      const errorMessage = error.message || 'Login failed';
+      toast.error(`Login failed: ${errorMessage}`);
+      
+      if (error.code === 'auth/unauthorized-domain') {
+        toast.error('Domain not authorized. Please add your domain to Firebase Console.');
+      }
     }
   };
 
