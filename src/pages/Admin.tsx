@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { toast } from 'sonner';
+import heic2any from 'heic2any';
 import { db, auth } from '../lib/firebase';
 import { 
   collection, 
@@ -243,22 +244,50 @@ function AdminProducts() {
   });
   const [uploading, setUploading] = useState(false);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData({ ...formData, image: reader.result as string });
+    try {
+      let fileToRead = file;
+
+      // Check for HEIC/HEIF format
+      const isHeic = file.type === 'image/heic' || 
+                     file.type === 'image/heif' || 
+                     file.name.toLowerCase().endsWith('.heic') || 
+                     file.name.toLowerCase().endsWith('.heif');
+
+      if (isHeic) {
+        toast.info('Converting HEIC image...');
+        const convertedBlob = await heic2any({
+          blob: file,
+          toType: 'image/jpeg',
+          quality: 0.8
+        });
+        
+        const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+        fileToRead = new File([blob], file.name.replace(/\.(heic|heif)$/i, '.jpg'), {
+          type: 'image/jpeg'
+        });
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, image: reader.result as string });
+        setUploading(false);
+        toast.success('Image uploaded successfully');
+      };
+      reader.onerror = () => {
+        setUploading(false);
+        toast.error('Failed to read file');
+      };
+      reader.readAsDataURL(fileToRead);
+    } catch (error) {
+      console.error('Image processing error:', error);
       setUploading(false);
-      toast.success('Image uploaded successfully');
-    };
-    reader.onerror = () => {
-      setUploading(false);
-      toast.error('Failed to read file');
-    };
-    reader.readAsDataURL(file);
+      toast.error('Failed to process image format');
+    }
   };
 
   useEffect(() => {
@@ -345,7 +374,7 @@ function AdminProducts() {
                   <Input 
                     id="image-file" 
                     type="file" 
-                    accept="image/*" 
+                    accept="image/*,.heic,.heif" 
                     onChange={handleImageUpload} 
                     className="cursor-pointer"
                   />
