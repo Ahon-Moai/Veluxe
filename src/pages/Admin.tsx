@@ -49,9 +49,15 @@ export default function Admin() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('Admin page mounted, checking auth state...');
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('Auth state changed:', user ? `Logged in as ${user.email}` : 'Not logged in');
       setUser(user);
       setLoading(false);
+    }, (error) => {
+      console.error('Auth state error:', error);
+      setLoading(false);
+      toast.error('Authentication error. Please refresh.');
     });
     return () => unsubscribe();
   }, []);
@@ -85,8 +91,9 @@ export default function Admin() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-luxury-gold"></div>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-luxury-cream">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-luxury-gold mb-4"></div>
+        <p className="text-luxury-gold font-serif italic animate-pulse">Initializing Admin Portal...</p>
       </div>
     );
   }
@@ -321,6 +328,9 @@ function AdminProducts() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const prods = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
       setProducts(prods);
+    }, (error) => {
+      console.error('Error fetching products:', error);
+      handleFirestoreError(error, OperationType.LIST, 'products');
     });
     return () => unsubscribe();
   }, []);
@@ -518,6 +528,9 @@ function AdminOrders() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const ords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
       setOrders(ords);
+    }, (error) => {
+      console.error('Error fetching orders:', error);
+      handleFirestoreError(error, OperationType.LIST, 'orders');
     });
     return () => unsubscribe();
   }, []);
