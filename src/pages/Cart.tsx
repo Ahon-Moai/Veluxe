@@ -4,7 +4,10 @@ import { Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Cart() {
-  const { cart, removeFromCart, updateQuantity, total } = useCart();
+  const { cart, updateQuantity, removeFromCart, total } = useCart();
+  const formatPrice = (price: number) => {
+    return `৳${price.toLocaleString('en-BD')}`;
+  };
 
   if (cart.length === 0) {
     return (
@@ -42,7 +45,7 @@ export default function Cart() {
                     <h3 className="text-2xl font-serif mb-1">{item.name}</h3>
                     <p className="text-gray-400 text-xs uppercase tracking-widest mb-2">Signature Collection</p>
                   </div>
-                  <p className="text-xl font-serif text-luxury-black">${item.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                  <p className="text-xl font-serif text-luxury-black">{formatPrice(item.price)}</p>
                 </div>
                 
                 <div className="flex flex-col sm:flex-row items-center sm:justify-between mt-6 space-y-4 sm:space-y-0">
@@ -81,7 +84,7 @@ export default function Cart() {
             <div className="space-y-4 mb-8">
               <div className="flex justify-between text-gray-600">
                 <span className="font-light tracking-wide">Subtotal</span>
-                <span className="font-medium">${total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                <span className="font-medium">{formatPrice(total)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span className="font-light tracking-wide">Shipping</span>
@@ -89,7 +92,7 @@ export default function Cart() {
               </div>
               <div className="border-t border-luxury-gold/10 pt-4 flex justify-between text-xl font-serif">
                 <span>Total</span>
-                <span className="text-luxury-black">${total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                <span className="text-luxury-black">{formatPrice(total)}</span>
               </div>
             </div>
             <Link to="/checkout">

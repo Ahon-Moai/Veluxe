@@ -22,6 +22,10 @@ export default function Checkout() {
     phone: '',
   });
 
+  const formatPrice = (price: number) => {
+    return `৳${price.toLocaleString('en-BD')}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cart.length === 0) return;
@@ -137,7 +141,7 @@ export default function Checkout() {
         </div>
 
         <div className="lg:col-span-1">
-          <div className="bg-luxury-cream/30 p-8 border border-luxury-gold/20 shadow-sm sticky top-24">
+          <div className="bg-white p-8 border-2 border-luxury-gold/30 shadow-2xl sticky top-24 rounded-sm">
             <h2 className="text-2xl font-serif mb-6 pb-4 border-b border-luxury-gold/10">Your Order</h2>
             <div className="space-y-6 mb-8">
               {cart.map((item) => (
@@ -146,12 +150,12 @@ export default function Checkout() {
                     <span className="text-luxury-black font-medium">{item.name}</span>
                     <span className="text-gray-400 text-[10px] uppercase tracking-widest">Qty: {item.quantity}</span>
                   </div>
-                  <span className="font-serif text-luxury-black">${(item.price * item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                  <span className="font-serif text-luxury-black">{formatPrice(item.price * item.quantity)}</span>
                 </div>
               ))}
               <div className="border-t border-luxury-gold/10 pt-6 flex justify-between items-center">
                 <span className="text-lg font-serif">Total Amount</span>
-                <span className="text-2xl font-serif text-luxury-black">${total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                <span className="text-2xl font-serif text-luxury-black">{formatPrice(total)}</span>
               </div>
             </div>
             <Button 

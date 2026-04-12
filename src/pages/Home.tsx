@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '../components/ui/button';
 import { ArrowRight, ShoppingCart } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { db } from '../lib/firebase';
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { Product } from '../types';
@@ -18,6 +18,7 @@ const categories = [
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const { addToCart } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(4));
@@ -28,9 +29,18 @@ export default function Home() {
     return () => unsubscribe();
   }, []);
 
+  const handleBuyNow = (product: Product) => {
+    addToCart(product);
+    navigate('/checkout');
+  };
+
   const handleAddToCart = (product: Product) => {
     addToCart(product);
     toast.success(`${product.name} added to cart`);
+  };
+
+  const formatPrice = (price: number) => {
+    return `৳${price.toLocaleString('en-BD')}`;
   };
 
   return (
@@ -120,37 +130,49 @@ export default function Home() {
           </div>
           
           {featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
               {featuredProducts.map((product) => (
                 <motion.div 
                   key={product.id} 
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
                   className="group flex flex-col"
                 >
-                  <div className="relative w-full aspect-[4/5] mb-6 overflow-hidden bg-luxury-cream border border-gray-100">
+                  <div className="relative w-full aspect-[4/5] mb-6 overflow-hidden bg-[#f9f9f9]">
                     <img 
                       src={product.image} 
                       alt={product.name} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"
                     />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                    <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    {product.stock === 0 && (
+                      <div className="absolute top-4 left-4 bg-white px-3 py-1 text-[10px] tracking-widest uppercase font-medium border border-gray-100 shadow-sm">
+                        Sold Out
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <h3 className="text-sm font-serif italic tracking-wide text-luxury-black">{product.name}</h3>
+                    <p className="text-sm font-light tracking-widest text-gray-600">{formatPrice(product.price)}</p>
+                    
+                    <div className="grid grid-cols-2 gap-2 w-full pt-4">
+                      <Button 
+                        onClick={() => handleBuyNow(product)}
+                        disabled={product.stock === 0}
+                        className="bg-luxury-black text-white hover:bg-luxury-black/90 rounded-none h-10 text-[10px] tracking-[0.2em] font-medium"
+                      >
+                        BUY NOW
+                      </Button>
                       <Button 
                         onClick={() => handleAddToCart(product)}
-                        className="w-full bg-white text-luxury-black hover:bg-luxury-black hover:text-white rounded-none py-6 font-medium tracking-widest transition-all duration-300 shadow-xl"
+                        disabled={product.stock === 0}
+                        variant="outline"
+                        className="border-luxury-black text-luxury-black hover:bg-luxury-black hover:text-white rounded-none h-10 text-[10px] tracking-[0.2em] font-medium transition-colors"
                       >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
                         ADD TO CART
                       </Button>
                     </div>
-                  </div>
-                  <div className="flex flex-col items-center text-center">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-2">{product.category || 'Collection'}</p>
-                    <h3 className="text-lg font-serif mb-2 group-hover:text-luxury-gold transition-colors duration-300">{product.name}</h3>
-                    <p className="text-luxury-black font-medium tracking-wider">${product.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
                   </div>
                 </motion.div>
               ))}
