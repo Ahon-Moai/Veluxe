@@ -12,16 +12,18 @@ import {
 // @ts-ignore
 import firebaseConfigFromJson from '../../firebase-applet-config.json';
 
-// Allow environment variables to override (useful for Vercel/hosting)
+// Use the JSON config directly to avoid any environment variable confusion
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || firebaseConfigFromJson.apiKey,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || firebaseConfigFromJson.authDomain,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || firebaseConfigFromJson.projectId,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || firebaseConfigFromJson.storageBucket,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || firebaseConfigFromJson.messagingSenderId,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || firebaseConfigFromJson.appId,
-  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || firebaseConfigFromJson.firestoreDatabaseId,
+  apiKey: firebaseConfigFromJson.apiKey,
+  authDomain: firebaseConfigFromJson.authDomain,
+  projectId: firebaseConfigFromJson.projectId,
+  storageBucket: firebaseConfigFromJson.storageBucket,
+  messagingSenderId: firebaseConfigFromJson.messagingSenderId,
+  appId: firebaseConfigFromJson.appId,
+  firestoreDatabaseId: firebaseConfigFromJson.firestoreDatabaseId,
 };
+
+console.log('Firebase Initializing with Project:', firebaseConfig.projectId);
 
 const app = initializeApp(firebaseConfig);
 
@@ -30,7 +32,6 @@ const databaseId = firebaseConfig.firestoreDatabaseId || '(default)';
 
 export const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
-  useFetchStreams: false, // Can help in some restricted environments
 }, databaseId);
 
 export const auth = getAuth(app);

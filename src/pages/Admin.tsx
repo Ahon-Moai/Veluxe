@@ -74,9 +74,9 @@ export default function Admin() {
       
       if (error.code === 'auth/unauthorized-domain') {
         const domain = window.location.hostname;
-        toast.error(`CRITICAL: Domain "${domain}" is not authorized in Firebase.`, {
+        toast.error(`CRITICAL: Domain "${domain}" is not authorized.`, {
           duration: 10000,
-          description: "Please go to Firebase Console > Authentication > Settings > Authorized domains and add this domain."
+          description: `Please verify this domain is added to Firebase Project: "${auth.config.apiKey?.slice(0, 5)}... / ${auth.app.options.projectId}"`
         });
       }
     }
@@ -188,19 +188,27 @@ function AdminDashboard() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const productsSnap = await getDocs(collection(db, 'products'));
-      const ordersSnap = await getDocs(collection(db, 'orders'));
-      
-      let revenue = 0;
-      ordersSnap.forEach(doc => {
-        revenue += doc.data().totalAmount || 0;
-      });
+      try {
+        // Fetch products from local API
+        const productsRes = await fetch('/api/products');
+        const productsData = await productsRes.json();
+        
+        // Fetch orders from Firestore (keep for real-time)
+        const ordersSnap = await getDocs(collection(db, 'orders'));
+        
+        let revenue = 0;
+        ordersSnap.forEach(doc => {
+          revenue += doc.data().totalAmount || 0;
+        });
 
-      setStats({
-        products: productsSnap.size,
-        orders: ordersSnap.size,
-        revenue
-      });
+        setStats({
+          products: productsData.length,
+          orders: ordersSnap.size,
+          revenue
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
     };
     fetchStats();
   }, []);
@@ -330,15 +338,21 @@ function AdminProducts() {
   };
 
   useEffect(() => {
-    const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const prods = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
-      setProducts(prods);
-    }, (error) => {
-      console.error('Error fetching products:', error);
-      handleFirestoreError(error, OperationType.LIST, 'products');
-    });
-    return () => unsubscribe();
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/products');
+        if (!response.ok) throw new Error('Failed to fetch');
+        const data = await response.json();
+        const sorted = data.sort((a: any, b: any) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setProducts(sorted);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        toast.error('Failed to load products.');
+      }
+    };
+    fetchProducts();
   }, []);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -352,47 +366,37 @@ function AdminProducts() {
         return;
       }
 
-      const data = {
+      const newProduct = {
         ...formData,
         price,
         stock,
-        createdAt: new Date().toISOString()
+        id: editingProduct ? editingProduct.id : `p${Date.now()}`,
+        createdAt: editingProduct ? editingProduct.createdAt : new Date().toISOString()
       };
 
+      let updatedProducts;
       if (editingProduct) {
-        try {
-          await updateDoc(doc(db, 'products', editingProduct.id!), data);
-          toast.success('Product updated successfully');
-        } catch (error) {
-          handleFirestoreError(error, OperationType.UPDATE, `products/${editingProduct.id}`);
-        }
+        updatedProducts = products.map(p => p.id === editingProduct.id ? newProduct : p);
       } else {
-        try {
-          await addDoc(collection(db, 'products'), data);
-          toast.success('Product added successfully');
-        } catch (error) {
-          handleFirestoreError(error, OperationType.CREATE, 'products');
-        }
+        updatedProducts = [newProduct, ...products];
       }
+
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedProducts)
+      });
+
+      if (!response.ok) throw new Error('Failed to save');
+
+      setProducts(updatedProducts);
+      toast.success(editingProduct ? 'Product updated' : 'Product added');
       setIsAddOpen(false);
       setEditingProduct(null);
       setFormData({ name: '', description: '', price: '', image: '', category: '', stock: '' });
     } catch (error) {
-      console.error('Error in handleSave:', error);
-      if (error instanceof Error) {
-        try {
-          const parsedError = JSON.parse(error.message);
-          if (parsedError.error && parsedError.error.includes('Missing or insufficient permissions')) {
-            toast.error('Permission denied. Please check if all fields are valid.');
-          } else {
-            toast.error('Error saving product: ' + (parsedError.error || error.message));
-          }
-        } catch {
-          toast.error('Error saving product: ' + error.message);
-        }
-      } else {
-        toast.error('Error saving product');
-      }
+      console.error('Error saving product:', error);
+      toast.error('Error saving product');
     }
   };
 
@@ -400,11 +404,21 @@ function AdminProducts() {
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteDoc(doc(db, 'products', id));
+      const updatedProducts = products.filter(p => p.id !== id);
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedProducts)
+      });
+
+      if (!response.ok) throw new Error('Failed to delete');
+
+      setProducts(updatedProducts);
       toast.success('Product deleted');
       setDeleteId(null);
     } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, `products/${id}`);
+      console.error('Error deleting product:', error);
+      toast.error('Error deleting product');
     }
   };
 
