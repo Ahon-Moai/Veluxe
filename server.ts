@@ -1,28 +1,17 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
-import { fileURLToPath } from "url";
 import fs from "fs/promises";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 async function startServer() {
-  console.log('Starting Veluxe server...');
   const app = express();
   const PORT = 3000;
 
   app.use(express.json({ limit: '10mb' }));
 
-  // Request logging
-  app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-    next();
-  });
-
-  // API Routes
+  // API routes
   app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", time: new Date().toISOString(), env: process.env.NODE_ENV });
+    res.json({ status: "ok", env: process.env.NODE_ENV });
   });
 
   app.get("/api/products", async (req, res) => {
@@ -45,42 +34,24 @@ async function startServer() {
     }
   });
 
-  // Serve static files or use Vite dev server
-  const distPath = path.join(process.cwd(), 'dist');
-  let distExists = false;
-  try {
-    await fs.access(distPath);
-    distExists = true;
-    console.log('Dist folder found.');
-  } catch (e) {
-    console.log('Dist folder not found.');
-  }
-
-  // If dist exists, we serve it (Production-ready)
-  if (distExists) {
-    console.log('Serving static files from dist...');
-    app.use(express.static(distPath));
-    
-    // SPA Fallback: Send index.html for any unknown routes
-    app.get('*', (req, res, next) => {
-      if (req.url.startsWith('/api')) return next();
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-  } else {
-    // Fallback to Vite Dev Server if dist is missing
-    console.log('Using Vite middleware (Development mode)');
+  // Vite middleware setup
+  if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
+  } else {
+    const distPath = path.join(process.cwd(), 'dist');
+    app.use(express.static(distPath));
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Veluxe server is live on port ${PORT}`);
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
   });
 }
 
-startServer().catch(err => {
-  console.error('Critical server startup error:', err);
-});
+startServer();
