@@ -17,6 +17,8 @@ const categories = [
   { name: 'Accessories', image: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&q=80&w=800' },
 ];
 
+import { productService } from '../services/productService';
+
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,11 +37,9 @@ export default function Home() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('/api/products');
-        if (!response.ok) throw new Error('Failed to fetch');
-        const data = await response.json();
+        const data = await productService.getProducts();
         // Sort by date and limit to 12
-        const sorted = data.sort((a: any, b: any) => 
+        const sorted = [...data].sort((a: any, b: any) => 
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         ).slice(0, 12);
         setFeaturedProducts(sorted);

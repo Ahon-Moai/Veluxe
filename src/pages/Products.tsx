@@ -12,6 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Filter, SlidersHorizontal } from 'lucide-react';
 import { Input } from '../components/ui/input';
 
+import { productService } from '../services/productService';
+
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -23,10 +25,8 @@ export default function Products() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('/api/products');
-        if (!response.ok) throw new Error('Failed to fetch');
-        const data = await response.json();
-        const sorted = data.sort((a: any, b: any) => 
+        const data = await productService.getProducts();
+        const sorted = [...data].sort((a: any, b: any) => 
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         setProducts(sorted);

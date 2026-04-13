@@ -9,7 +9,8 @@ import {
   Trash2, 
   LogOut,
   ChevronRight,
-  Lock
+  Lock,
+  DatabaseBackup
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -36,6 +37,8 @@ import {
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
 import { Product, Order } from '../types';
 import { handleFirestoreError, OperationType } from '../lib/errorHandlers';
+
+import { productService } from '../services/productService';
 
 const ADMIN_EMAIL = "mimpy124ahon124@gmail.com";
 
@@ -189,9 +192,8 @@ function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch products from local API
-        const productsRes = await fetch('/api/products');
-        const productsData = await productsRes.json();
+        // Fetch products from productService
+        const productsData = await productService.getProducts();
         
         // Fetch orders from Firestore (keep for real-time)
         const ordersSnap = await getDocs(collection(db, 'orders'));
@@ -340,10 +342,8 @@ function AdminProducts() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('/api/products');
-        if (!response.ok) throw new Error('Failed to fetch');
-        const data = await response.json();
-        const sorted = data.sort((a: any, b: any) => 
+        const data = await productService.getProducts(true); // Force refresh in admin
+        const sorted = [...data].sort((a: any, b: any) => 
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         setProducts(sorted);
@@ -366,31 +366,24 @@ function AdminProducts() {
         return;
       }
 
-      const newProduct = {
+      const productData = {
         ...formData,
         price,
         stock,
-        id: editingProduct ? editingProduct.id : `p${Date.now()}`,
-        createdAt: editingProduct ? editingProduct.createdAt : new Date().toISOString()
       };
 
-      let updatedProducts;
       if (editingProduct) {
-        updatedProducts = products.map(p => p.id === editingProduct.id ? newProduct : p);
+        await productService.updateProduct(editingProduct.id!, productData);
+        toast.success('Product updated');
       } else {
-        updatedProducts = [newProduct, ...products];
+        await productService.addProduct(productData);
+        toast.success('Product added');
       }
 
-      const response = await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedProducts)
-      });
-
-      if (!response.ok) throw new Error('Failed to save');
-
-      setProducts(updatedProducts);
-      toast.success(editingProduct ? 'Product updated' : 'Product added');
+      // Refresh list
+      const updatedData = await productService.getProducts(true);
+      setProducts(updatedData);
+      
       setIsAddOpen(false);
       setEditingProduct(null);
       setFormData({ name: '', description: '', price: '', image: '', category: '', stock: '' });
@@ -404,16 +397,12 @@ function AdminProducts() {
 
   const handleDelete = async (id: string) => {
     try {
-      const updatedProducts = products.filter(p => p.id !== id);
-      const response = await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedProducts)
-      });
-
-      if (!response.ok) throw new Error('Failed to delete');
-
-      setProducts(updatedProducts);
+      await productService.deleteProduct(id);
+      
+      // Refresh list
+      const updatedData = await productService.getProducts(true);
+      setProducts(updatedData);
+      
       toast.success('Product deleted');
       setDeleteId(null);
     } catch (error) {
@@ -422,11 +411,61 @@ function AdminProducts() {
     }
   };
 
+  const handleSeedProducts = async () => {
+    try {
+      toast.loading('Seeding products from local storage...');
+      // We can't fetch /api/products anymore, so we'll use a hardcoded list or just ask user to re-add.
+      // Actually, I'll just provide a button that uses the initial data.
+      const initialProducts = [
+        {
+          "name": "Chronos Heritage",
+          "description": "A precision-engineered timepiece with a sapphire crystal face and genuine leather strap.",
+          "price": 45000,
+          "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800",
+          "category": "Timepieces",
+          "stock": 10
+        },
+        {
+          "name": "Oud Noir",
+          "description": "An intense, mysterious fragrance with notes of agarwood, rose, and amber.",
+          "price": 12500,
+          "image": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&q=80&w=800",
+          "category": "Fragrances",
+          "stock": 25
+        },
+        {
+          "name": "Aurelian Cufflinks",
+          "description": "18k gold-plated cufflinks with a subtle brushed finish.",
+          "price": 8500,
+          "image": "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&q=80&w=800",
+          "category": "Accessories",
+          "stock": 15
+        }
+      ];
+
+      for (const p of initialProducts) {
+        await productService.addProduct(p as any);
+      }
+      
+      const updatedData = await productService.getProducts(true);
+      setProducts(updatedData);
+      toast.dismiss();
+      toast.success('Products seeded successfully');
+    } catch (error) {
+      toast.dismiss();
+      toast.error('Failed to seed products');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-serif">Products</h1>
-        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <div className="flex space-x-4">
+          <Button variant="outline" onClick={handleSeedProducts} className="border-luxury-gold text-luxury-gold hover:bg-luxury-cream">
+            <DatabaseBackup className="w-4 h-4 mr-2" /> Seed Initial Data
+          </Button>
+          <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
             <Button className="bg-luxury-black text-white hover:bg-luxury-black/90">
               <Plus className="w-4 h-4 mr-2" /> Add Product

@@ -1,5 +1,5 @@
 {
   "name": "Veluxe Luxury",
-  "description": "Premium luxury e-commerce experience with optimized full-stack performance and real-time order tracking. (Updated)",
+  "description": "Premium luxury e-commerce experience with optimized Firestore caching and real-time order tracking.",
   "requestFramePermissions": []
 }
