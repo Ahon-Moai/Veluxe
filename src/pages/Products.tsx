@@ -7,7 +7,7 @@ import { useCart } from '../hooks/useCart';
 import { toast } from 'sonner';
 import { SafeImage } from '../components/SafeImage';
 import { Button } from '../components/ui/button';
-import { LoadingText } from '../components/LoadingText';
+import { ProductGridSkeleton } from '../components/ProductSkeleton';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, SlidersHorizontal } from 'lucide-react';
 import { Input } from '../components/ui/input';
@@ -64,7 +64,7 @@ export default function Products() {
           <div className="max-w-xl">
             <h1 className="text-5xl md:text-7xl font-serif mb-6">The Collection</h1>
             <p className="text-gray-400 font-light tracking-wide leading-relaxed">
-              Browse our complete range of luxury essentials, from precision timepieces to artisanal fragrances.
+              Browse our complete range of ethereal essentials, from precision timepieces to artisanal fragrances.
             </p>
           </div>
           
@@ -85,7 +85,7 @@ export default function Products() {
         </div>
 
         {loading ? (
-          <LoadingText />
+          <ProductGridSkeleton count={8} />
         ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-20">
             {filteredProducts.map((product, index) => (

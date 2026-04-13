@@ -22,7 +22,7 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-20">
           <div className="flex items-center">
             <Link to="/" className="text-2xl md:text-3xl font-serif font-bold tracking-[0.2em] text-luxury-black">
-              VELUXE
+              CLOUDS
             </Link>
           </div>
 

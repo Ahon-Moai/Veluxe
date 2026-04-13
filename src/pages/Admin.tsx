@@ -107,7 +107,7 @@ export default function Admin() {
           </div>
           <h1 className="text-3xl font-serif mb-4">Admin Access</h1>
           <p className="text-gray-500 mb-8 font-light">
-            Please sign in with your authorized administrator account to manage Veluxe.
+            Please sign in with your authorized administrator account to manage Clouds.
           </p>
           <Button 
             onClick={handleLogin}
@@ -284,11 +284,11 @@ function AdminProducts() {
       }
 
       // Compress image if it's still large
-      if (fileToRead.size > 500 * 1024) { // If larger than 500KB
-        toast.info('Compressing image...');
+      if (fileToRead.size > 100 * 1024) { // If larger than 100KB
+        toast.info('Optimizing image for fast loading...');
         const options = {
-          maxSizeMB: 0.7,
-          maxWidthOrHeight: 1920,
+          maxSizeMB: 0.1, // Max 100KB
+          maxWidthOrHeight: 800, // Max 800px
           useWebWorker: true
         };
         try {
@@ -312,7 +312,8 @@ function AdminProducts() {
         }
         setFormData({ ...formData, image: result });
         setUploading(false);
-        toast.success('Image uploaded and optimized');
+        const sizeInKB = Math.round(result.length / 1024);
+        toast.success(`Image optimized to ${sizeInKB}KB`);
       };
       reader.onerror = () => {
         setUploading(false);

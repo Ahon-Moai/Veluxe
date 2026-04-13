@@ -6,9 +6,9 @@
   --font-serif: "Cormorant Garamond", serif;
   --font-display: "Montserrat", sans-serif;
 
-  --color-luxury-gold: #D4AF37;
-  --color-luxury-black: #1A1A1A;
-  --color-luxury-cream: #F5F2ED;
+  --color-luxury-gold: #7FB5FF;
+  --color-luxury-black: #001D6E;
+  --color-luxury-cream: #F7F9FF;
 }
 
 @layer utilities {

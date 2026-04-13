@@ -9,7 +9,7 @@ import { Product } from '../types';
 import { useCart } from '../hooks/useCart';
 import { toast } from 'sonner';
 import { SafeImage } from '../components/SafeImage';
-import { LoadingText } from '../components/LoadingText';
+import { ProductGridSkeleton } from '../components/ProductSkeleton';
 
 const categories = [
   { name: 'Timepieces', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800' },
@@ -108,8 +108,8 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="text-7xl md:text-[10rem] font-serif text-white mb-10 leading-[0.8] tracking-tighter"
             >
-              Pure <br />
-              <span className="italic text-luxury-gold">Sophistication</span>
+              Ethereal <br />
+              <span className="italic text-luxury-gold">Comfort</span>
             </motion.h1>
             
             <motion.p 
@@ -118,7 +118,7 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.6 }}
               className="text-xl text-gray-300 mb-12 font-light tracking-wide max-w-lg leading-relaxed"
             >
-              Experience the pinnacle of luxury with our meticulously crafted collection of premium essentials.
+              Experience the lightness of being with our meticulously crafted collection of ethereal essentials.
             </motion.p>
             
             <motion.div 
@@ -214,7 +214,7 @@ export default function Home() {
           </div>
           
           {loading ? (
-            <LoadingText />
+            <ProductGridSkeleton count={8} />
           ) : featuredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-20">
               {featuredProducts.map((product, index) => (
