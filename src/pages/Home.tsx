@@ -8,6 +8,8 @@ import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestor
 import { Product } from '../types';
 import { useCart } from '../hooks/useCart';
 import { toast } from 'sonner';
+import { SafeImage } from '../components/SafeImage';
+import { LoadingText } from '../components/LoadingText';
 
 const categories = [
   { name: 'Timepieces', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800' },
@@ -17,6 +19,7 @@ const categories = [
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const heroRef = useRef(null);
@@ -30,12 +33,24 @@ export default function Home() {
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   useEffect(() => {
-    const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(12));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const prods = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
-      setFeaturedProducts(prods);
-    });
-    return () => unsubscribe();
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/products');
+        if (!response.ok) throw new Error('Failed to fetch');
+        const data = await response.json();
+        // Sort by date and limit to 12
+        const sorted = data.sort((a: any, b: any) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        ).slice(0, 12);
+        setFeaturedProducts(sorted);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching featured products:', error);
+        setLoading(false);
+        toast.error('Failed to load featured products.');
+      }
+    };
+    fetchProducts();
   }, []);
 
   const handleBuyNow = (product: Product) => {
@@ -171,11 +186,12 @@ export default function Home() {
                 transition={{ delay: i * 0.1 }}
                 className="group relative h-[500px] overflow-hidden cursor-pointer"
               >
-                <img 
+                <SafeImage 
                   src={cat.image} 
                   alt={cat.name} 
+                  fallbackSeed={cat.name}
+                  containerClassName="w-full h-full"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300" />
                 <div className="absolute bottom-8 left-8">
@@ -204,7 +220,9 @@ export default function Home() {
             </motion.div>
           </div>
           
-          {featuredProducts.length > 0 ? (
+          {loading ? (
+            <LoadingText />
+          ) : featuredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-20">
               {featuredProducts.map((product, index) => (
                 <motion.div 
@@ -216,14 +234,16 @@ export default function Home() {
                   className="group flex flex-col"
                 >
                   <div className="relative w-full aspect-[4/5] mb-8 overflow-hidden bg-[#f9f9f9]">
-                    <motion.img 
-                      whileHover={{ scale: 1.08 }}
-                      transition={{ duration: 0.8, ease: "easeOut" }}
-                      src={product.image} 
+                    <SafeImage 
+                      src={product.image.includes('unsplash.com') && !product.image.includes('w=') 
+                        ? `${product.image}&w=800&q=80` 
+                        : product.image} 
                       alt={product.name} 
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      referrerPolicy="no-referrer"
+                      fallbackSeed={product.id}
+                      containerClassName="w-full h-full"
+                      className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
+                      loading={index < 4 ? "eager" : "lazy"}
+                      decoding={index < 4 ? "sync" : "async"}
                     />
                     {product.stock === 0 && (
                       <div className="absolute top-6 left-6 bg-white px-4 py-1.5 text-[9px] tracking-[0.2em] uppercase font-semibold border border-gray-100 shadow-sm z-10">
@@ -258,14 +278,8 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-20">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <div key={i} className="animate-pulse flex flex-col">
-                  <div className="aspect-[4/5] bg-gray-50 mb-8" />
-                  <div className="h-4 bg-gray-50 w-3/4 mx-auto mb-3" />
-                  <div className="h-4 bg-gray-50 w-1/2 mx-auto" />
-                </div>
-              ))}
+            <div className="py-20 text-center">
+              <p className="text-gray-400 font-light italic">Our new collection is arriving soon.</p>
             </div>
           )}
 

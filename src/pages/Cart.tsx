@@ -32,25 +32,19 @@ export default function Cart() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
         <div className="lg:col-span-2 space-y-12">
           {cart.map((item) => (
-            <div key={`${item.productId}-${item.size}`} className="flex flex-col sm:flex-row items-center sm:items-start space-y-6 sm:space-y-0 sm:space-x-8 py-8 border-b border-gray-100 last:border-0">
-              <div className="w-32 h-40 bg-luxury-cream flex-shrink-0 border border-gray-50 shadow-sm overflow-hidden">
-                <img 
-                  src={item.image} 
-                  alt={item.name} 
-                  className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
+            <div key={`${item.productId}-${item.size}`} className="flex flex-col sm:flex-row items-center sm:items-start space-y-6 sm:space-y-0 sm:space-x-8 py-12 border-b border-gray-100 last:border-0">
               <div className="flex-1 text-center sm:text-left">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6">
                   <div>
-                    <h3 className="text-2xl font-serif mb-1">{item.name}</h3>
-                    <p className="text-gray-400 text-xs uppercase tracking-widest mb-2">Signature Collection</p>
+                    <h3 className="text-3xl font-serif mb-2">{item.name}</h3>
+                    <p className="text-gray-400 text-[10px] uppercase tracking-[0.3em] mb-3">Signature Collection</p>
                     {item.size && (
-                      <p className="text-luxury-gold text-[10px] uppercase tracking-widest font-bold">Size: {item.size}</p>
+                      <div className="inline-block px-3 py-1 bg-luxury-gold/5 border border-luxury-gold/10">
+                        <p className="text-luxury-gold text-[10px] uppercase tracking-widest font-bold">Size: {item.size}</p>
+                      </div>
                     )}
                   </div>
-                  <p className="text-xl font-serif text-luxury-black">{formatPrice(item.price)}</p>
+                  <p className="text-2xl font-serif text-luxury-black mt-4 sm:mt-0">{formatPrice(item.price)}</p>
                 </div>
                 
                 <div className="flex flex-col sm:flex-row items-center sm:justify-between mt-6 space-y-4 sm:space-y-0">

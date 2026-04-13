@@ -1,0 +1,62 @@
+[
+  {
+    "id": "p1",
+    "name": "Chronos Heritage",
+    "description": "A precision-engineered timepiece with a sapphire crystal face and genuine leather strap.",
+    "price": 45000,
+    "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800",
+    "category": "Timepieces",
+    "stock": 10,
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "p2",
+    "name": "Oud Noir",
+    "description": "An intense, mysterious fragrance with notes of agarwood, rose, and amber.",
+    "price": 12500,
+    "image": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&q=80&w=800",
+    "category": "Fragrances",
+    "stock": 25,
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "p3",
+    "name": "Aurelian Cufflinks",
+    "description": "18k gold-plated cufflinks with a subtle brushed finish.",
+    "price": 8500,
+    "image": "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&q=80&w=800",
+    "category": "Accessories",
+    "stock": 15,
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "p4",
+    "name": "Midnight Spectre",
+    "description": "Matte black minimalist watch with a mesh stainless steel band.",
+    "price": 32000,
+    "image": "https://images.unsplash.com/photo-1508685096489-7aac291ba597?auto=format&fit=crop&q=80&w=800",
+    "category": "Timepieces",
+    "stock": 8,
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "p5",
+    "name": "Velvet Rose",
+    "description": "A delicate floral scent with a base of white musk and vanilla.",
+    "price": 9800,
+    "image": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&q=80&w=800",
+    "category": "Fragrances",
+    "stock": 20,
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "p6",
+    "name": "Sovereign Wallet",
+    "description": "Hand-stitched Italian leather wallet with RFID protection.",
+    "price": 6500,
+    "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&q=80&w=800",
+    "category": "Accessories",
+    "stock": 30,
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+]

@@ -163,14 +163,14 @@ export default function Checkout() {
             <h2 className="text-3xl font-serif mb-10 pb-6 border-b border-white/10">Order Summary</h2>
             <div className="space-y-8 mb-10 max-h-[40vh] overflow-y-auto pr-4 custom-scrollbar">
               {cart.map((item) => (
-                <div key={`${item.productId}-${item.size}`} className="flex space-x-6 pb-6 border-b border-white/5 last:border-0">
-                  <div className="w-20 h-24 bg-white/10 flex-shrink-0 overflow-hidden">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover opacity-80" />
-                  </div>
-                  <div className="flex-1 space-y-2">
+                <div key={`${item.productId}-${item.size}`} className="pb-8 border-b border-white/10 last:border-0">
+                  <div className="flex-1 space-y-4">
                     <div className="flex justify-between items-start">
-                      <h3 className="text-sm font-serif italic tracking-wide">{item.name}</h3>
-                      <span className="text-sm font-light">{formatPrice(item.price * item.quantity)}</span>
+                      <div>
+                        <h3 className="text-lg font-serif italic tracking-wide mb-1">{item.name}</h3>
+                        <p className="text-[9px] text-white/30 uppercase tracking-[0.2em]">Signature Collection</p>
+                      </div>
+                      <span className="text-lg font-serif text-luxury-gold">{formatPrice(item.price * item.quantity)}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] text-white/40 uppercase tracking-widest">Qty: {item.quantity}</span>

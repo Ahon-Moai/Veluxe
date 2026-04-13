@@ -1,14 +1,18 @@
-import { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { Toaster } from './components/ui/sonner';
+import { ScrollToTop } from './components/ScrollToTop';
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
 
-const Home = lazy(() => import('./pages/Home'));
-const Products = lazy(() => import('./pages/Products'));
+import Home from './pages/Home';
+import Products from './pages/Products';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+
 const Admin = lazy(() => import('./pages/Admin'));
-const Cart = lazy(() => import('./pages/Cart'));
-const Checkout = lazy(() => import('./pages/Checkout'));
 
 const LoadingFallback = () => (
   <div className="h-screen w-full flex items-center justify-center bg-luxury-cream">
@@ -16,9 +20,31 @@ const LoadingFallback = () => (
   </div>
 );
 
+// Configure NProgress
+NProgress.configure({ showSpinner: false, speed: 500, minimum: 0.3 });
+
+function RouteWatcher() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    NProgress.start();
+    const timer = setTimeout(() => {
+      NProgress.done();
+    }, 100);
+    return () => {
+      clearTimeout(timer);
+      NProgress.done();
+    };
+  }, [pathname]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <Router>
+      <ScrollToTop />
+      <RouteWatcher />
       <div className="min-h-screen bg-luxury-cream flex flex-col">
         <Navbar />
         <main className="flex-grow">
