@@ -1,51 +1,48 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { 
-  initializeFirestore, 
-  enableIndexedDbPersistence, 
-  doc, 
-  getDocFromServer,
-  connectFirestoreEmulator
-} from 'firebase/firestore';
+import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 
 // Default config from the JSON file
 // @ts-ignore
 import firebaseConfigFromJson from '../../firebase-applet-config.json';
 
-// Use the JSON config directly to avoid any environment variable confusion
+// Allow environment variables to override (useful for Vercel/hosting)
 const firebaseConfig = {
-  apiKey: firebaseConfigFromJson.apiKey,
-  authDomain: firebaseConfigFromJson.authDomain,
-  projectId: firebaseConfigFromJson.projectId,
-  storageBucket: firebaseConfigFromJson.storageBucket,
-  messagingSenderId: firebaseConfigFromJson.messagingSenderId,
-  appId: firebaseConfigFromJson.appId,
-  firestoreDatabaseId: firebaseConfigFromJson.firestoreDatabaseId,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || firebaseConfigFromJson.apiKey,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || firebaseConfigFromJson.authDomain,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || firebaseConfigFromJson.projectId,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || firebaseConfigFromJson.storageBucket,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || firebaseConfigFromJson.messagingSenderId,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || firebaseConfigFromJson.appId,
+  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || firebaseConfigFromJson.firestoreDatabaseId,
 };
 
-console.log('Firebase Initializing with Project:', firebaseConfig.projectId);
-
 const app = initializeApp(firebaseConfig);
-
-// Initialize Firestore with settings to improve connectivity in restricted environments
-const databaseId = firebaseConfig.firestoreDatabaseId || '(default)';
-
-export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-}, databaseId);
-
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || '(default)');
 export const auth = getAuth(app);
 
-// Enable persistence with a more graceful error handling
+// Enable persistence
 if (typeof window !== 'undefined') {
   enableIndexedDbPersistence(db).catch((err) => {
     if (err.code === 'failed-precondition') {
-      console.warn('Firestore Persistence: Multiple tabs open, persistence enabled in one tab only.');
+      console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
     } else if (err.code === 'unimplemented') {
-      console.warn('Firestore Persistence: Browser does not support persistence.');
-    } else {
-      console.error('Firestore Persistence Error:', err);
+      console.warn('The current browser does not support all of the features required to enable persistence');
     }
   });
 }
 
+// Test connection
+import { doc, getDocFromCache, getDocFromServer } from 'firebase/firestore';
+async function testConnection() {
+  try {
+    // Try to get a non-existent doc just to check connection
+    await getDocFromServer(doc(db, '_connection_test_', 'ping'));
+    console.log('Firestore connection successful');
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
+      console.error("Firestore is offline. Please check your Firebase configuration.");
+    }
+  }
+}
+testConnection();

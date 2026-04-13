@@ -9,8 +9,7 @@ import {
   Trash2, 
   LogOut,
   ChevronRight,
-  Lock,
-  DatabaseBackup
+  Lock
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -37,8 +36,6 @@ import {
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
 import { Product, Order } from '../types';
 import { handleFirestoreError, OperationType } from '../lib/errorHandlers';
-
-import { productService } from '../services/productService';
 
 const ADMIN_EMAIL = "mimpy124ahon124@gmail.com";
 
@@ -77,10 +74,7 @@ export default function Admin() {
       
       if (error.code === 'auth/unauthorized-domain') {
         const domain = window.location.hostname;
-        toast.error(`CRITICAL: Domain "${domain}" is not authorized.`, {
-          duration: 10000,
-          description: `Please verify this domain is added to Firebase Project: "${auth.config.apiKey?.slice(0, 5)}... / ${auth.app.options.projectId}"`
-        });
+        toast.error(`Domain "${domain}" is not authorized. Add it to Firebase Console > Authentication > Settings > Authorized domains.`);
       }
     }
   };
@@ -191,26 +185,19 @@ function AdminDashboard() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      try {
-        // Fetch products from productService
-        const productsData = await productService.getProducts();
-        
-        // Fetch orders from Firestore (keep for real-time)
-        const ordersSnap = await getDocs(collection(db, 'orders'));
-        
-        let revenue = 0;
-        ordersSnap.forEach(doc => {
-          revenue += doc.data().totalAmount || 0;
-        });
+      const productsSnap = await getDocs(collection(db, 'products'));
+      const ordersSnap = await getDocs(collection(db, 'orders'));
+      
+      let revenue = 0;
+      ordersSnap.forEach(doc => {
+        revenue += doc.data().totalAmount || 0;
+      });
 
-        setStats({
-          products: productsData.length,
-          orders: ordersSnap.size,
-          revenue
-        });
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-      }
+      setStats({
+        products: productsSnap.size,
+        orders: ordersSnap.size,
+        revenue
+      });
     };
     fetchStats();
   }, []);
@@ -340,19 +327,15 @@ function AdminProducts() {
   };
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await productService.getProducts(true); // Force refresh in admin
-        const sorted = [...data].sort((a: any, b: any) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setProducts(sorted);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        toast.error('Failed to load products.');
-      }
-    };
-    fetchProducts();
+    const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const prods = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+      setProducts(prods);
+    }, (error) => {
+      console.error('Error fetching products:', error);
+      handleFirestoreError(error, OperationType.LIST, 'products');
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -366,30 +349,47 @@ function AdminProducts() {
         return;
       }
 
-      const productData = {
+      const data = {
         ...formData,
         price,
         stock,
+        createdAt: new Date().toISOString()
       };
 
       if (editingProduct) {
-        await productService.updateProduct(editingProduct.id!, productData);
-        toast.success('Product updated');
+        try {
+          await updateDoc(doc(db, 'products', editingProduct.id!), data);
+          toast.success('Product updated successfully');
+        } catch (error) {
+          handleFirestoreError(error, OperationType.UPDATE, `products/${editingProduct.id}`);
+        }
       } else {
-        await productService.addProduct(productData);
-        toast.success('Product added');
+        try {
+          await addDoc(collection(db, 'products'), data);
+          toast.success('Product added successfully');
+        } catch (error) {
+          handleFirestoreError(error, OperationType.CREATE, 'products');
+        }
       }
-
-      // Refresh list
-      const updatedData = await productService.getProducts(true);
-      setProducts(updatedData);
-      
       setIsAddOpen(false);
       setEditingProduct(null);
       setFormData({ name: '', description: '', price: '', image: '', category: '', stock: '' });
     } catch (error) {
-      console.error('Error saving product:', error);
-      toast.error('Error saving product');
+      console.error('Error in handleSave:', error);
+      if (error instanceof Error) {
+        try {
+          const parsedError = JSON.parse(error.message);
+          if (parsedError.error && parsedError.error.includes('Missing or insufficient permissions')) {
+            toast.error('Permission denied. Please check if all fields are valid.');
+          } else {
+            toast.error('Error saving product: ' + (parsedError.error || error.message));
+          }
+        } catch {
+          toast.error('Error saving product: ' + error.message);
+        }
+      } else {
+        toast.error('Error saving product');
+      }
     }
   };
 
@@ -397,63 +397,11 @@ function AdminProducts() {
 
   const handleDelete = async (id: string) => {
     try {
-      await productService.deleteProduct(id);
-      
-      // Refresh list
-      const updatedData = await productService.getProducts(true);
-      setProducts(updatedData);
-      
+      await deleteDoc(doc(db, 'products', id));
       toast.success('Product deleted');
       setDeleteId(null);
     } catch (error) {
-      console.error('Error deleting product:', error);
-      toast.error('Error deleting product');
-    }
-  };
-
-  const handleSeedProducts = async () => {
-    try {
-      toast.loading('Seeding products from local storage...');
-      // We can't fetch /api/products anymore, so we'll use a hardcoded list or just ask user to re-add.
-      // Actually, I'll just provide a button that uses the initial data.
-      const initialProducts = [
-        {
-          "name": "Chronos Heritage",
-          "description": "A precision-engineered timepiece with a sapphire crystal face and genuine leather strap.",
-          "price": 45000,
-          "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800",
-          "category": "Timepieces",
-          "stock": 10
-        },
-        {
-          "name": "Oud Noir",
-          "description": "An intense, mysterious fragrance with notes of agarwood, rose, and amber.",
-          "price": 12500,
-          "image": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&q=80&w=800",
-          "category": "Fragrances",
-          "stock": 25
-        },
-        {
-          "name": "Aurelian Cufflinks",
-          "description": "18k gold-plated cufflinks with a subtle brushed finish.",
-          "price": 8500,
-          "image": "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&q=80&w=800",
-          "category": "Accessories",
-          "stock": 15
-        }
-      ];
-
-      for (const p of initialProducts) {
-        await productService.addProduct(p as any);
-      }
-      
-      const updatedData = await productService.getProducts(true);
-      setProducts(updatedData);
-      toast.dismiss();
-      toast.success('Products seeded successfully');
-    } catch (error) {
-      toast.dismiss();
-      toast.error('Failed to seed products');
+      handleFirestoreError(error, OperationType.DELETE, `products/${id}`);
     }
   };
 
@@ -461,11 +409,7 @@ function AdminProducts() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-serif">Products</h1>
-        <div className="flex space-x-4">
-          <Button variant="outline" onClick={handleSeedProducts} className="border-luxury-gold text-luxury-gold hover:bg-luxury-cream">
-            <DatabaseBackup className="w-4 h-4 mr-2" /> Seed Initial Data
-          </Button>
-          <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
             <Button className="bg-luxury-black text-white hover:bg-luxury-black/90">
               <Plus className="w-4 h-4 mr-2" /> Add Product

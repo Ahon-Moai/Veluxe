@@ -17,8 +17,6 @@ const categories = [
   { name: 'Accessories', image: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&q=80&w=800' },
 ];
 
-import { productService } from '../services/productService';
-
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,22 +33,17 @@ export default function Home() {
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await productService.getProducts();
-        // Sort by date and limit to 12
-        const sorted = [...data].sort((a: any, b: any) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        ).slice(0, 12);
-        setFeaturedProducts(sorted);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching featured products:', error);
-        setLoading(false);
-        toast.error('Failed to load featured products.');
-      }
-    };
-    fetchProducts();
+    const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(12));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const prods = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+      setFeaturedProducts(prods);
+      setLoading(false);
+    }, (error) => {
+      console.error('Error fetching featured products:', error);
+      setLoading(false);
+      toast.error('Failed to load featured products.');
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleBuyNow = (product: Product) => {
